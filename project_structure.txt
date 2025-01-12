@@ -1,0 +1,5 @@
+grain-trading-app/
+├── frontend/                 # React frontend
+├── backend/                  # Flask backend
+├── database/                 # SQLite database files
+└── docs/                     # Documentation files 

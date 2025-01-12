@@ -1,0 +1,51 @@
+{
+  "files": [
+    {
+      "name": "prd.md",
+      "description": "This document provides a detailed product requirements document, outlining the business overview, goals, target users, features, non-functional requirements, and constraints. It serves as the main reference for understanding the application's purpose and scope.",
+      "references": [
+        "Core Features: Purchasing Module, Inventory Management, Selling Module, Reporting Module, User Management",
+        "Non-functional Requirements: Performance, Scalability, Security, Usability",
+        "Background: High-level business overview and goals"
+      ]
+    },
+    {
+      "name": "database_design.md",
+      "description": "This document contains the database schema, detailing normalized tables for grains, purchases, inventory, sales, users, and roles. It ensures a loosely coupled and extensible structure.",
+      "references": [
+        "Database Tables: grains, purchases, inventory, sales, users",
+        "Constraints: Use SQLite initially, future extensibility considerations"
+      ]
+    },
+    {
+      "name": "ui_development_plan.md",
+      "description": "This document outlines the MVP screens, user flows, and features for the application. It helps in planning the frontend implementation and user experience.",
+      "references": [
+        "UI Screens: Dashboard, Purchasing, Inventory, Selling, Reports, User Management",
+        "Features: Dynamic role-based permissions, intuitive and printable UI"
+      ]
+    },
+    {
+      "name": "task_breakdown.md",
+      "description": "This document breaks down the project into phases and tasks, covering backend, frontend, integration, reporting, and deployment. It is critical for planning and tracking development progress.",
+      "references": [
+        "Phases: Backend Development, Frontend Development, Integration, Reporting, Deployment",
+        "Milestones: API completion, MVP delivery, report generation, deployment"
+      ]
+    }
+  ],
+  "instructions": [
+    {
+      "query": "What are the tech stacks being used?",
+      "details": "The frontend is React, the backend is Python Flask, and SQLite is the database. Confirm if additional technologies are required."
+    },
+    {
+      "query": "Project status updates",
+      "details": "In each conversation, review progress and update a 'Project_Status.md' file with implemented features, pending tasks, and next steps."
+    },
+    {
+      "query": "Additional details to include",
+      "details": "Ensure references to each feature are well-documented. Identify any missing requirements or tasks and address them in the relevant document."
+    }
+  ]
+}
