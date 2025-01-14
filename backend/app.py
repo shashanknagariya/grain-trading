@@ -22,7 +22,7 @@ CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
 # Configure SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grain_trading.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
 db.init_app(app)
 migrate.init_app(app, db)
