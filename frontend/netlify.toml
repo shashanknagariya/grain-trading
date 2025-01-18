@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  command = "npm install && npm install typescript && npm run build"
+  command = "npm install && npm install -D vite @vitejs/plugin-react typescript && npm run build"
   publish = "dist"
 
 [[redirects]]

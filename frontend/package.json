@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
@@ -23,8 +23,7 @@
     "zustand": "^4.5.1",
     "react-to-print": "^2.14.15",
     "react-input-mask": "^2.0.4",
-    "@types/react-input-mask": "^3.0.5",
-    "typescript": "^5.0.2"
+    "@types/react-input-mask": "^3.0.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.55",
@@ -35,6 +34,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "typescript": "^5.0.2",
     "vite": "^5.1.0"
   }
 } 
