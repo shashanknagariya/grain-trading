@@ -6,6 +6,7 @@
 [build.environment]
   NPM_FLAGS = "--production=false"
   NODE_VERSION = "18"
+  CI = "true"
 
 [[redirects]]
   from = "/*"
