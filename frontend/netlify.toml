@@ -1,7 +1,11 @@
 [build]
   base = "frontend"
-  command = "npm install && npm install -D vite @vitejs/plugin-react typescript && npm run build"
+  command = "npm ci && npm run build"
   publish = "dist"
+
+[build.environment]
+  NPM_FLAGS = "--production=false"
+  NODE_VERSION = "18"
 
 [[redirects]]
   from = "/*"
