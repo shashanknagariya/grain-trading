@@ -4,7 +4,7 @@
   publish = "dist"
 
 [build.environment]
-  NPM_FLAGS = "--production=false"
+  NODE_ENV = "development"
   NODE_VERSION = "18"
   CI = "true"
 
