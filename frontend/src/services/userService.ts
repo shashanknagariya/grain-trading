@@ -23,7 +23,7 @@ export interface UpdateUserData {
 
 export const userService = {
   async getAll(): Promise<User[]> {
-    const response = await fetch('http://localhost:5000/api/users', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch users');
@@ -31,7 +31,7 @@ export const userService = {
   },
 
   async updateRole(userId: number, role: string): Promise<User> {
-    const response = await fetch(`http://localhost:5000/api/users/${userId}/role`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${userId}/role`, {
       method: 'PUT',
       headers: {
         ...getAuthHeader(),
@@ -44,7 +44,7 @@ export const userService = {
   },
 
   async create(userData: CreateUserData): Promise<User> {
-    const response = await fetch('http://localhost:5000/api/users', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
       method: 'POST',
       headers: {
         ...getAuthHeader(),
@@ -62,7 +62,7 @@ export const userService = {
   },
 
   async delete(userId: number): Promise<void> {
-    const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${userId}`, {
       method: 'DELETE',
       headers: getAuthHeader()
     });
@@ -74,7 +74,7 @@ export const userService = {
   },
 
   async update(userId: number, userData: UpdateUserData): Promise<User> {
-    const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${userId}`, {
       method: 'PUT',
       headers: {
         ...getAuthHeader(),

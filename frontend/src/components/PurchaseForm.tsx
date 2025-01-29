@@ -60,10 +60,10 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
   const fetchData = async () => {
     try {
       const [grainsResponse, godownsResponse] = await Promise.all([
-        fetch('http://localhost:5000/api/grains', {
+        fetch(`${import.meta.env.VITE_API_URL}/api/grains`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         }),
-        fetch('http://localhost:5000/api/godowns', {
+        fetch(`${import.meta.env.VITE_API_URL}/api/godowns`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         })
       ]);
@@ -89,7 +89,7 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
       setLoading(true);
       setError('');
 
-      const response = await fetch('http://localhost:5000/api/purchases', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

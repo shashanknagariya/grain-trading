@@ -16,7 +16,7 @@ export interface CreateGodownData {
 
 export const godownService = {
   async getAll(): Promise<Godown[]> {
-    const response = await fetch('http://localhost:5000/api/godowns', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/godowns`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch godowns');
@@ -24,7 +24,7 @@ export const godownService = {
   },
 
   async create(data: CreateGodownData): Promise<Godown> {
-    const response = await fetch('http://localhost:5000/api/godowns', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/godowns`, {
       method: 'POST',
       headers: {
         ...getAuthHeader(),
@@ -42,7 +42,7 @@ export const godownService = {
   },
 
   async update(id: number, data: Partial<CreateGodownData>): Promise<Godown> {
-    const response = await fetch(`http://localhost:5000/api/godowns/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/godowns/${id}`, {
       method: 'PUT',
       headers: {
         ...getAuthHeader(),
@@ -60,7 +60,7 @@ export const godownService = {
   },
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`http://localhost:5000/api/godowns/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/godowns/${id}`, {
       method: 'DELETE',
       headers: getAuthHeader()
     });

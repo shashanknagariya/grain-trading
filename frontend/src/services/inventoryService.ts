@@ -21,7 +21,7 @@ export interface InventoryHistory {
 
 export const inventoryService = {
   async getAll(): Promise<InventoryItem[]> {
-    const response = await fetch('http://localhost:5000/api/inventory', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/inventory`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch inventory');
@@ -29,7 +29,7 @@ export const inventoryService = {
   },
 
   async getLowStock(): Promise<InventoryItem[]> {
-    const response = await fetch('http://localhost:5000/api/inventory/low-stock', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/inventory/low-stock`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch low stock items');
@@ -37,7 +37,7 @@ export const inventoryService = {
   },
 
   async getHistory(grainId: number): Promise<InventoryHistory> {
-    const response = await fetch(`http://localhost:5000/api/inventory/${grainId}/history`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/inventory/${grainId}/history`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch inventory history');

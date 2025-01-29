@@ -30,7 +30,7 @@ export interface SalesSummary {
 
 export const saleService = {
   async getAll(): Promise<Sale[]> {
-    const response = await fetch('http://localhost:5000/api/sales', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch sales');
@@ -38,7 +38,7 @@ export const saleService = {
   },
 
   async getById(id: number): Promise<Sale> {
-    const response = await fetch(`http://localhost:5000/api/sales/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales/${id}`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch sale');
@@ -46,7 +46,7 @@ export const saleService = {
   },
 
   async create(sale: CreateSaleData): Promise<Sale> {
-    const response = await fetch('http://localhost:5000/api/sales', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales`, {
       method: 'POST',
       headers: {
         ...getAuthHeader(),
@@ -62,7 +62,7 @@ export const saleService = {
   },
 
   async getSummary(): Promise<SalesSummary> {
-    const response = await fetch('http://localhost:5000/api/sales/summary', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales/summary`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch sales summary');

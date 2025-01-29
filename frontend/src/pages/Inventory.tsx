@@ -32,7 +32,7 @@ export const Inventory: React.FC = () => {
     const fetchInventory = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/inventory', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/inventory`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }

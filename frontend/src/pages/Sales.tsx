@@ -43,7 +43,7 @@ export const Sales: React.FC = () => {
 
   const fetchSales = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/sales', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -69,7 +69,7 @@ export const Sales: React.FC = () => {
 
   const handleRowClick = async (saleId: number) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/sales/${saleId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales/${saleId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -85,7 +85,7 @@ export const Sales: React.FC = () => {
 
   const handlePaymentStatusChange = async (saleId: number, newStatus: 'pending' | 'paid') => {
     try {
-      const response = await fetch(`http://localhost:5000/api/sales/${saleId}/payment-status`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales/${saleId}/payment-status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

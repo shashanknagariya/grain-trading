@@ -44,12 +44,12 @@ export const Dashboard: React.FC = () => {
     const fetchData = async () => {
       try {
         const [summaryResponse, inventoryResponse] = await Promise.all([
-          fetch('http://localhost:5000/api/dashboard/summary', {
+          fetch(`${import.meta.env.VITE_API_URL}/api/dashboard/summary`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
           }),
-          fetch('http://localhost:5000/api/inventory/summary', {
+          fetch(`${import.meta.env.VITE_API_URL}api/inventory/summary`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }

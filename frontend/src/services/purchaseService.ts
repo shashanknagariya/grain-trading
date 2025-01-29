@@ -31,7 +31,7 @@ export interface CreatePurchaseData {
 
 export const purchaseService = {
   async getAll(): Promise<Purchase[]> {
-    const response = await fetch('http://localhost:5000/api/purchases', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch purchases');
@@ -39,7 +39,7 @@ export const purchaseService = {
   },
 
   async getById(id: number): Promise<Purchase> {
-    const response = await fetch(`http://localhost:5000/api/purchases/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases/${id}`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch purchase');
@@ -47,7 +47,7 @@ export const purchaseService = {
   },
 
   async create(purchase: CreatePurchaseData): Promise<Purchase> {
-    const response = await fetch('http://localhost:5000/api/purchases', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases`, {
       method: 'POST',
       headers: {
         ...getAuthHeader(),

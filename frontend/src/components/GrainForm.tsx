@@ -25,7 +25,7 @@ export const GrainForm: React.FC<GrainFormProps> = ({ onSubmit }) => {
     try {
       setLoading(true);
       
-      const response = await fetch('http://localhost:5000/api/grains', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/grains`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

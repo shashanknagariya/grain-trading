@@ -26,7 +26,7 @@ export interface DashboardSummary {
 
 export const dashboardService = {
   async getSummary(): Promise<DashboardSummary> {
-    const response = await fetch('http://localhost:5000/api/dashboard/summary', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/dashboard/summary`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch dashboard summary');

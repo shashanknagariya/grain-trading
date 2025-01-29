@@ -10,7 +10,7 @@ export interface Grain {
 
 export const grainService = {
   async getAll(): Promise<Grain[]> {
-    const response = await fetch('http://localhost:5000/api/grains', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/grains`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch grains');
@@ -18,7 +18,7 @@ export const grainService = {
   },
 
   async getById(id: number): Promise<Grain> {
-    const response = await fetch(`http://localhost:5000/api/grains/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/grains/${id}`, {
       headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to fetch grain');
@@ -26,7 +26,7 @@ export const grainService = {
   },
 
   async create(grain: Omit<Grain, 'id' | 'created_at'>): Promise<Grain> {
-    const response = await fetch('http://localhost:5000/api/grains', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/grains`, {
       method: 'POST',
       headers: {
         ...getAuthHeader(),
@@ -39,7 +39,7 @@ export const grainService = {
   },
 
   async update(id: number, grain: Partial<Grain>): Promise<Grain> {
-    const response = await fetch(`http://localhost:5000/api/grains/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/grains/${id}`, {
       method: 'PUT',
       headers: {
         ...getAuthHeader(),
@@ -52,7 +52,7 @@ export const grainService = {
   },
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`http://localhost:5000/api/grains/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/grains/${id}`, {
       method: 'DELETE',
       headers: getAuthHeader()
     });

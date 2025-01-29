@@ -2,7 +2,7 @@ import { config } from '../config';
 
 export const api = {
   get: async (endpoint: string) => {
-    const response = await fetch(`${config.API_URL}${endpoint}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
@@ -12,7 +12,7 @@ export const api = {
   },
 
   post: async (endpoint: string, data: any) => {
-    const response = await fetch(`${config.API_URL}${endpoint}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -25,7 +25,7 @@ export const api = {
   },
 
   put: async (endpoint: string, data: any) => {
-    const response = await fetch(`${config.API_URL}${endpoint}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,

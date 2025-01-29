@@ -10,7 +10,7 @@ export const CreateSale: React.FC = () => {
 
   const handleSubmit = async (formData: any) => {
     try {
-      const response = await fetch('http://localhost:5000/api/sales', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

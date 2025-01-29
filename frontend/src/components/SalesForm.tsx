@@ -61,7 +61,7 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
 
   const fetchGrains = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/grains', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/grains`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -104,7 +104,7 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
         }))
       };
 
-      const response = await fetch('http://localhost:5000/api/sales', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

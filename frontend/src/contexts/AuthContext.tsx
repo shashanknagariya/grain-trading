@@ -25,7 +25,7 @@ export const AuthProvider: FC<{ children: React.ReactNode }> = ({ children }) =>
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      fetch('http://localhost:5000/api/auth/me', {
+      fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -41,7 +41,7 @@ export const AuthProvider: FC<{ children: React.ReactNode }> = ({ children }) =>
   }, []);
 
   const login = async (username: string, password: string) => {
-    const response = await fetch('http://localhost:5000/api/auth/login', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

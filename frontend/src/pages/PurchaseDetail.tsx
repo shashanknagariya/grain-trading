@@ -63,10 +63,10 @@ export const PurchaseDetailPage: React.FC = () => {
   const fetchPurchaseDetails = async () => {
     try {
       const [purchaseResponse, paymentsResponse] = await Promise.all([
-        fetch(`http://localhost:5000/api/purchases/${id}`, {
+        fetch(`${import.meta.env.VITE_API_URL}/api/purchases/${id}`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         }),
-        fetch(`http://localhost:5000/api/purchases/${id}/payments`, {
+        fetch(`${import.meta.env.VITE_API_URL}/api/purchases/${id}/payments`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         })
       ]);
@@ -89,7 +89,7 @@ export const PurchaseDetailPage: React.FC = () => {
 
   const handleStatusChange = async (status: string, amount?: number, description?: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/purchases/${id}/payment-status`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases/${id}/payment-status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -152,7 +152,7 @@ export const PurchaseDetailPage: React.FC = () => {
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      const response = await fetch(`http://localhost:5000/api/purchases/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

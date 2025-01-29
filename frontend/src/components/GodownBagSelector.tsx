@@ -35,7 +35,7 @@ export const GodownBagSelector: React.FC<GodownBagSelectorProps> = ({
 
   const fetchGodownStock = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/inventory/godown-stock/${grainId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/inventory/godown-stock/${grainId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
