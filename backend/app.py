@@ -17,7 +17,7 @@ from commands import init_commands, create_admin
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "https://your-netlify-url.netlify.app"]}})
 
 # Configure SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grain_trading.db'
