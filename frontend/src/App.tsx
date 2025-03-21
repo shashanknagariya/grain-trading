@@ -19,6 +19,7 @@ import './App.css';
 import './styles/print.css';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { CircularProgress } from '@mui/material';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 
 const ProtectedRoute: FC<{ element: React.ReactElement }> = ({ element }) => {
   const { user, isLoading } = useAuth();
@@ -76,6 +77,7 @@ const App: FC = () => {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <AuthProvider>
         <NotificationProvider>
+          <PWAInstallPrompt />
           <Router>
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" />} />

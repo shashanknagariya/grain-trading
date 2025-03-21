@@ -2,21 +2,23 @@ const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 
-const ICON_SIZES = [72, 96, 128, 144, 152, 192, 384, 512];
-const SOURCE_ICON = path.join(__dirname, '../src/assets/logo.png');
-const OUTPUT_DIR = path.join(__dirname, '../public/icons');
+const ICONS_DIR = path.join(__dirname, '../public/icons');
 
-// Ensure output directory exists
-if (!fs.existsSync(OUTPUT_DIR)) {
-  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+// Create icons directory if it doesn't exist
+if (!fs.existsSync(ICONS_DIR)) {
+  fs.mkdirSync(ICONS_DIR, { recursive: true });
 }
 
-// Generate regular icons
-ICON_SIZES.forEach(size => {
+// Source image (you'll need to provide this)
+const SOURCE_ICON = path.join(__dirname, '../src/assets/logo.png');
+
+const SIZES = [192, 512];
+
+SIZES.forEach(size => {
   sharp(SOURCE_ICON)
     .resize(size, size)
-    .toFile(path.join(OUTPUT_DIR, `icon-${size}x${size}.png`))
-    .then(() => console.log(`Generated ${size}x${size} icon`))
+    .toFile(path.join(ICONS_DIR, `icon-${size}x${size}.png`))
+    .then(info => console.log(`Generated ${size}x${size} icon`))
     .catch(err => console.error(`Error generating ${size}x${size} icon:`, err));
 });
 
@@ -34,6 +36,6 @@ sharp(SOURCE_ICON)
     background: { r: 255, g: 255, b: 255, alpha: 1 }
   })
   .resize(512, 512)
-  .toFile(path.join(OUTPUT_DIR, 'maskable-icon.png'))
+  .toFile(path.join(ICONS_DIR, 'maskable-icon.png'))
   .then(() => console.log('Generated maskable icon'))
   .catch(err => console.error('Error generating maskable icon:', err)); 

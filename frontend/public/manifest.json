@@ -1,7 +1,7 @@
 {
   "name": "Grain Trading Management",
   "short_name": "BPMP",
-  "description": "Grain Trading Management System",
+  "description": "Manage grain trading operations efficiently",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
