@@ -14,59 +14,64 @@ from blueprints.godown import godown
 from blueprints.payment import payment
 from commands import init_commands, create_admin
 
-load_dotenv()
+def create_app():
+    load_dotenv()
+    
+    app = Flask(__name__)
+    
+    # Update CORS configuration
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": ["http://localhost:5173", "https://bpmp.netlify.app"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True
+        }
+    })
+    
+    # Configure SQLAlchemy
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grain_trading.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+    
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', 'https://bpmp.netlify.app')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
+    # Initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    jwt.init_app(app)
+    
+    # Import models
+    from models import User, Grain, Purchase, Inventory, Sale
+    
+    # Register blueprints
+    app.register_blueprint(auth, url_prefix='/api/auth')
+    app.register_blueprint(grains, url_prefix='/api')
+    app.register_blueprint(purchase, url_prefix='/api')
+    app.register_blueprint(inventory, url_prefix='/api')
+    app.register_blueprint(dashboard, url_prefix='/api')
+    app.register_blueprint(sale, url_prefix='/api')
+    app.register_blueprint(users, url_prefix='/api')
+    app.register_blueprint(godown, url_prefix='/api')
+    app.register_blueprint(payment, url_prefix='/api')
+    
+    # Initialize commands
+    init_commands(app)
+    app.cli.add_command(create_admin)
+    
+    @app.route('/api/health')
+    def health_check():
+        return {'status': 'healthy'}
+    
+    return app
 
-app = Flask(__name__)
-
-# Update CORS configuration with additional settings
-CORS(app, resources={
-    r"/api/*": {
-        "origins": ["http://localhost:5173", "https://bpmp.netlify.app"],
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True
-    }
-})
-
-# Configure SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grain_trading.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-
-# Add CORS-related headers to all responses
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', 'https://bpmp.netlify.app')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
-
-db.init_app(app)
-migrate.init_app(app, db)
-jwt.init_app(app)
-
-# Import models after db initialization
-from models import User, Grain, Purchase, Inventory, Sale
-
-# Register blueprints
-app.register_blueprint(auth, url_prefix='/api/auth')
-app.register_blueprint(grains, url_prefix='/api')
-app.register_blueprint(purchase, url_prefix='/api')
-app.register_blueprint(inventory, url_prefix='/api')
-app.register_blueprint(dashboard, url_prefix='/api')
-app.register_blueprint(sale, url_prefix='/api')
-app.register_blueprint(users, url_prefix='/api')
-app.register_blueprint(godown, url_prefix='/api')
-app.register_blueprint(payment, url_prefix='/api')
-
-# Initialize commands
-init_commands(app)
-app.cli.add_command(create_admin)
-
-@app.route('/api/health')
-def health_check():
-    return {'status': 'healthy'}
+app = create_app()
 
 if __name__ == '__main__':
     app.run(debug=True) 
