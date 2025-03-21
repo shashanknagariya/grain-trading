@@ -7,11 +7,11 @@ def create_admin_user():
         try:
             # Check if admin already exists
             admin_user = input('please input your username')
-            password = input('please input your password')
-            admin = User.query.filter_by(admin_user).first()
+            password=input('please enter your passwrod')
+            admin = User.query.filter_by(username=admin_user).first()
             if not admin:
                 admin = User(
-                    admin_user,
+                    username=admin_user,
                     email='admin@example.com',
                     role=Role.ADMIN.value
                 )
