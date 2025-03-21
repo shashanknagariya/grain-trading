@@ -1,9 +1,7 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import type { FC } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
-import { Dashboard } from './pages/Dashboard';
-import { Inventory } from './pages/Inventory';
 import { Grains } from './pages/Grains';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
@@ -20,6 +18,7 @@ import { CreateSale } from './pages/CreateSale';
 import './App.css';
 import './styles/print.css';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { CircularProgress } from '@mui/material';
 
 const ProtectedRoute: FC<{ element: React.ReactElement }> = ({ element }) => {
   const { user, isLoading } = useAuth();
@@ -30,6 +29,46 @@ const ProtectedRoute: FC<{ element: React.ReactElement }> = ({ element }) => {
   
   return user ? element : <Navigate to="/login" />;
 };
+
+// Modify lazy imports to handle default exports correctly
+const Dashboard = React.lazy(() => 
+  import('./pages/Dashboard').then(module => ({
+    default: module.Dashboard
+  }))
+);
+
+const Inventory = React.lazy(() => 
+  import('./pages/Inventory').then(module => ({
+    default: module.Inventory
+  }))
+);
+
+// Remove duplicate imports since we're using lazy loading
+// and fix the import conflicts
+const LazyPurchases = React.lazy(() => 
+  import('./pages/Purchases').then(module => ({
+    default: module.Purchases
+  }))
+);
+
+const LazySales = React.lazy(() => 
+  import('./pages/Sales').then(module => ({
+    default: module.Sales
+  }))
+);
+
+const LazyUsers = React.lazy(() => 
+  import('./pages/Users').then(module => ({
+    default: module.Users
+  }))
+);
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <CircularProgress />
+  </div>
+);
 
 const App: FC = () => {
   console.log('App component rendering');
@@ -50,15 +89,35 @@ const App: FC = () => {
                     element={
                       <Layout>
                         <Routes>
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route path="/purchases" element={<Purchases />} />
+                          <Route path="/dashboard" element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <Dashboard />
+                            </Suspense>
+                          } />
+                          <Route path="/purchases" element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <LazyPurchases />
+                            </Suspense>
+                          } />
                           <Route path="/purchases/:id" element={<PurchaseDetailPage />} />
-                          <Route path="/sales" element={<Sales />} />
+                          <Route path="/sales" element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <LazySales />
+                            </Suspense>
+                          } />
                           <Route path="/sales/new" element={<CreateSale />} />
-                          <Route path="/inventory" element={<Inventory />} />
+                          <Route path="/inventory" element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <Inventory />
+                            </Suspense>
+                          } />
                           <Route path="/grains" element={<Grains />} />
                           <Route path="/godowns" element={<Godowns />} />
-                          <Route path="/users" element={<Users />} />
+                          <Route path="/users" element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <LazyUsers />
+                            </Suspense>
+                          } />
                         </Routes>
                       </Layout>
                     }

@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { formatWeight, formatCurrency } from '../utils/formatters';
+import { useBackgroundSync } from '../hooks/useBackgroundSync';
 
 interface Grain {
   id: number;
@@ -52,6 +53,7 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
   const [godowns, setGodowns] = useState<Godown[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { queueSync } = useBackgroundSync();
 
   useEffect(() => {
     fetchData();

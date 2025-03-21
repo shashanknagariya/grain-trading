@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import { formatCurrency } from '../utils/formatters';
 import { useNotification } from '../contexts/NotificationContext';
+import { PullToRefresh } from '../components/PullToRefresh';
 
 interface DashboardSummary {
   pending_incoming: number;
@@ -39,6 +40,7 @@ export const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { showError } = useNotification();
   const theme = useTheme();
+  const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +76,16 @@ export const Dashboard: React.FC = () => {
     fetchData();
   }, []);
 
+  const handleRefresh = async () => {
+    try {
+      const response = await fetch('/api/dashboard');
+      const newData = await response.json();
+      setData(newData);
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    }
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
@@ -107,70 +119,72 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <Box>
-      <Typography variant="h5" gutterBottom>Dashboard</Typography>
-      
-      {/* Summary Cards */}
-      <Grid container spacing={3}>
-        {cards.map((card, index) => (
-          <Grid item xs={12} md={4} key={index}>
-            <Card 
-              sx={{ 
-                height: '100%',
-                background: `linear-gradient(135deg, ${card.color}08 0%, ${card.color}03 100%)`,
-                border: `1px solid ${card.color}20`,
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: `0 4px 20px ${card.color}20`
-                }
-              }}
-            >
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-                  <Box>
-                    <Typography variant="h6" color="textSecondary" gutterBottom>
-                      {card.title}
-                    </Typography>
-                    <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                      {formatCurrency(card.value)}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {card.description}
-                    </Typography>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <Box>
+        <Typography variant="h5" gutterBottom>Dashboard</Typography>
+        
+        {/* Summary Cards */}
+        <Grid container spacing={3}>
+          {cards.map((card, index) => (
+            <Grid item xs={12} md={4} key={index}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  background: `linear-gradient(135deg, ${card.color}08 0%, ${card.color}03 100%)`,
+                  border: `1px solid ${card.color}20`,
+                  transition: 'transform 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: `0 4px 20px ${card.color}20`
+                  }
+                }}
+              >
+                <CardContent>
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+                    <Box>
+                      <Typography variant="h6" color="textSecondary" gutterBottom>
+                        {card.title}
+                      </Typography>
+                      <Typography variant="h4" component="div" sx={{ mb: 1 }}>
+                        {formatCurrency(card.value)}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {card.description}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ p: 1 }}>
+                      {card.icon}
+                    </Box>
                   </Box>
-                  <Box sx={{ p: 1 }}>
-                    {card.icon}
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
 
-      {/* Inventory Details Section */}
-      {inventoryDetails?.inventory && inventoryDetails.inventory.length > 0 && (
-        <Box mt={4}>
-          <Divider sx={{ my: 3 }} />
-          <Typography variant="h6" gutterBottom>Inventory Details</Typography>
-          <Grid container spacing={2}>
-            {inventoryDetails.inventory.map((item, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>{item.grain_name}</Typography>
-                    <Typography>Bags: {item.number_of_bags}</Typography>
-                    <Typography>Weight: {item.total_weight} kg</Typography>
-                    <Typography>Rate: {formatCurrency(item.rate_per_kg)}/kg</Typography>
-                    <Typography>Value: {formatCurrency(item.value)}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      )}
-    </Box>
+        {/* Inventory Details Section */}
+        {inventoryDetails?.inventory && inventoryDetails.inventory.length > 0 && (
+          <Box mt={4}>
+            <Divider sx={{ my: 3 }} />
+            <Typography variant="h6" gutterBottom>Inventory Details</Typography>
+            <Grid container spacing={2}>
+              {inventoryDetails.inventory.map((item, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>{item.grain_name}</Typography>
+                      <Typography>Bags: {item.number_of_bags}</Typography>
+                      <Typography>Weight: {item.total_weight} kg</Typography>
+                      <Typography>Rate: {formatCurrency(item.rate_per_kg)}/kg</Typography>
+                      <Typography>Value: {formatCurrency(item.value)}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
+      </Box>
+    </PullToRefresh>
   );
 }; 

@@ -1,0 +1,31 @@
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.splash-logo {
+  width: 120px;
+  height: 120px;
+  animation: pulse 1.5s infinite;
+}
+
+.splash-loading {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #666;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+} 
