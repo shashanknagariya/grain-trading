@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  command = "npm install -D vite@latest @vitejs/plugin-react typescript && ./node_modules/.bin/vite build"
+  command = "npm cache clean --force && rm -rf node_modules && npm install && npm run build"
   publish = "dist"
 
 [build.environment]
