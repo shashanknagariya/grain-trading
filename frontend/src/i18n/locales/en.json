@@ -1,0 +1,33 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "logout": "Logout",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter"
+  },
+  "grains": {
+    "title": "Grains",
+    "add_grain": "Add Grain",
+    "edit_grain": "Edit Grain",
+    "delete_grain": "Delete Grain",
+    "name": "Name",
+    "type": "Type",
+    "quantity": "Quantity",
+    "price": "Price",
+    "date": "Date"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalid_input": "Invalid input",
+    "server_error": "Server error occurred"
+  }
+}
