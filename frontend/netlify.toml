@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  command = "NODE_ENV=production npm install && NODE_OPTIONS=--no-warnings node ./node_modules/vite/bin/vite.js build"
+  command = "npm install -D vite@latest @vitejs/plugin-react typescript && export PATH=$(npm bin):$PATH && vite build"
   publish = "dist"
 
 [build.environment]
