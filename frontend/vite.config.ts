@@ -4,6 +4,7 @@ import type { UserConfig } from 'vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 const config: UserConfig = {
+  base: '/',
   plugins: [
     react({
       jsxRuntime: 'automatic',
@@ -26,29 +27,21 @@ const config: UserConfig = {
   build: {
     outDir: 'dist',
     sourcemap: process.env.NODE_ENV !== 'production',
+    minify: 'terser',
     rollupOptions: {
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'mui-vendor': ['@mui/material', '@mui/icons-material', '@mui/x-date-pickers'],
-          'utils-vendor': ['date-fns', 'axios', 'lodash'],
+          'mui-vendor': ['@mui/material', '@mui/icons-material'],
+          'utils-vendor': ['axios', 'date-fns'],
           'i18n-vendor': ['i18next', 'react-i18next']
         }
-      }
-    },
-    chunkSizeWarningLimit: 1600,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
       }
     }
   },
   server: {
-    host: '0.0.0.0',
-    port: 5173,
-    open: true
+    port: 3000,
+    strictPort: true
   }
 }
 
