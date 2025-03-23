@@ -4,9 +4,16 @@
   publish = "dist"
 
 [build.environment]
-  NODE_ENV = "development"
+  NODE_ENV = "production"
   NODE_VERSION = "18"
   CI = "true"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    Cache-Control = "public, max-age=31536000"
 
 [[headers]]
   for = "/*.js"
@@ -14,11 +21,12 @@
     Content-Type = "application/javascript"
 
 [[headers]]
-  for = "/*.(js|mjs)"
+  for = "/*.css"
   [headers.values]
-    Content-Type = "application/javascript"
+    Content-Type = "text/css"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = true
