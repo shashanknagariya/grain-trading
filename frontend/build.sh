@@ -1,18 +1,9 @@
 #!/bin/bash
-# Install dependencies
+echo "Installing dependencies..."
 npm install
 
-# Create a direct reference to the vite executable
-VITE_PATH="./node_modules/.bin/vite"
+echo "Installing Vite explicitly..."
+npm install -g vite@latest
 
-# Check if vite exists
-if [ -f "$VITE_PATH" ]; then
-  echo "Vite found at $VITE_PATH"
-  # Run build using the direct path
-  $VITE_PATH build
-else
-  echo "Vite not found at $VITE_PATH"
-  echo "Attempting fallback method..."
-  # Try a fallback method
-  npx --no-install vite build
-fi
+echo "Starting build process..."
+npx --yes vite build
