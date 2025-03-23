@@ -3,8 +3,7 @@ import react from '@vitejs/plugin-react'
 import type { UserConfig } from 'vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
-const config: UserConfig = {
-  base: '/',
+export default defineConfig({
   plugins: [
     react({
       jsxRuntime: 'automatic',
@@ -28,23 +27,31 @@ const config: UserConfig = {
     outDir: 'dist',
     assetsDir: 'assets',
     emptyOutDir: true,
-    sourcemap: process.env.NODE_ENV !== 'production',
-    minify: 'terser',
+    sourcemap: false,
+    manifest: true,
     rollupOptions: {
+      input: {
+        main: './index.html'
+      },
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'mui-vendor': ['@mui/material', '@mui/icons-material'],
           'utils-vendor': ['axios', 'date-fns'],
           'i18n-vendor': ['i18next', 'react-i18next']
+        },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name.endsWith('.png')) {
+            return 'icons/[name][extname]'
+          }
+          return 'assets/[name]-[hash][extname]'
         }
       }
     }
   },
+  publicDir: 'public',
   server: {
     port: 3000,
     strictPort: true
   }
-}
-
-export default defineConfig(config)
+})
