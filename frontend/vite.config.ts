@@ -26,18 +26,20 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    assetsDir: '',
     emptyOutDir: true,
     sourcemap: false,
+    copyPublicDir: true,
     rollupOptions: {
+      input: {
+        main: 'index.html'
+      },
       output: {
-        entryFileNames: 'assets/[name].[hash].js',
-        chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash].[ext]'
+        entryFileNames: `assets/[name].[hash].js`,
+        chunkFileNames: `assets/[name].[hash].js`,
+        assetFileNames: `assets/[name].[hash].[ext]`
       }
     }
   },
-  publicDir: 'public',
   server: {
     port: 3000,
     strictPort: true
