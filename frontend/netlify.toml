@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  command = "npm install -g vite && npm install && npm run build"
+  command = "NODE_ENV=production npm install && NODE_OPTIONS=--no-warnings node ./node_modules/vite/bin/vite.js build"
   publish = "dist"
 
 [build.environment]
