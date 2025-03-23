@@ -1,42 +1,49 @@
 const CACHE_NAME = 'grain-trading-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
-];
 
-const API_CACHE_NAME = 'api-cache-v1';
-const API_URLS = ['/api/grains', '/api/dashboard'];
-
-// Install Service Worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/manifest.json',
+        '/icons/icon-192x192.png',
+        '/icons/icon-512x512.png'
+      ]);
     })
   );
 });
 
-// Activate Service Worker
+self.addEventListener('fetch', (event) => {
+  // Don't try to handle non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      if (response) {
+        return response;
+      }
+      return fetch(event.request).catch(() => {
+        // Return a fallback response for failed fetches
+        return new Response('Offline content not available');
+      });
+    })
+  );
+});
+
+// Clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
       );
-    })
-  );
-});
-
-// Fetch Event Handler
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
     })
   );
 });
@@ -138,4 +145,4 @@ async function checkForUpdates() {
   } catch (error) {
     console.error('Failed to check for updates:', error);
   }
-} 
+}
