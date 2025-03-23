@@ -1,0 +1,23 @@
+{
+  "validation": {
+    "required": "This field is required",
+    "minLength": "Minimum {{count}} characters required",
+    "maxLength": "Maximum {{count}} characters allowed",
+    "invalidFormat": "Invalid format",
+    "invalidNumber": "Please enter a valid number",
+    "invalidDate": "Please enter a valid date",
+    "passwordMismatch": "Passwords do not match",
+    "emailInvalid": "Please enter a valid email address"
+  },
+  "api": {
+    "network": "Network error. Please check your connection",
+    "unauthorized": "Unauthorized access",
+    "notFound": "Resource not found",
+    "serverError": "Server error occurred",
+    "unknown": "An unknown error occurred"
+  },
+  "form": {
+    "submitError": "Error submitting form",
+    "invalidData": "Invalid form data"
+  }
+} 

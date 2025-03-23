@@ -1,0 +1,43 @@
+{
+  "pages": {
+    "dashboard": {
+      "title": "Dashboard",
+      "summary": "Overview of your business",
+      "cards": {
+        "totalPurchases": "Total Purchases",
+        "totalSales": "Total Sales",
+        "inventory": "Current Inventory",
+        "revenue": "Revenue"
+      },
+      "charts": {
+        "monthlyTrends": "Monthly Trends",
+        "topGrains": "Top Grains",
+        "salesByRegion": "Sales by Region"
+      }
+    },
+    "inventory": {
+      "title": "Inventory Management",
+      "subtitle": "Track and manage your grain stock",
+      "sections": {
+        "current": "Current Stock",
+        "incoming": "Incoming Stock",
+        "outgoing": "Outgoing Stock"
+      }
+    }
+  },
+  "common": {
+    "filters": {
+      "title": "Filters",
+      "dateRange": "Date Range",
+      "status": "Status",
+      "type": "Type",
+      "apply": "Apply Filters",
+      "clear": "Clear All"
+    },
+    "table": {
+      "noData": "No data available",
+      "loading": "Loading data...",
+      "rowsPerPage": "Rows per page"
+    }
+  }
+} 

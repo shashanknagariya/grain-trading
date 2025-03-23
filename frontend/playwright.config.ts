@@ -1,46 +1,47 @@
-import { PlaywrightTestConfig } from '@playwright/test';
+import { PlaywrightTestConfig, devices } from '@playwright/test';
+import { DEVICE_CONFIGS } from './src/utils/deviceTestUtils';
 
 const config: PlaywrightTestConfig = {
-  testDir: './tests/e2e',
+  testDir: './e2e',
+  timeout: 30000,
+  retries: 2,
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
-    video: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
   projects: [
     {
-      name: 'Chrome Desktop',
-      use: {
-        browserName: 'chromium',
-        viewport: { width: 1280, height: 720 },
-      },
+      name: 'chromium',
+      use: { browserName: 'chromium' },
     },
     {
-      name: 'Firefox Desktop',
-      use: {
-        browserName: 'firefox',
-        viewport: { width: 1280, height: 720 },
-      },
+      name: 'firefox',
+      use: { browserName: 'firefox' },
     },
     {
-      name: 'Safari Desktop',
+      name: 'webkit',
+      use: { browserName: 'webkit' },
+    },
+    {
+      name: 'iPhone 13',
       use: {
+        ...devices['iPhone 13'],
         browserName: 'webkit',
-        viewport: { width: 1280, height: 720 },
       },
     },
     {
-      name: 'Mobile Chrome',
+      name: 'iPad',
       use: {
-        browserName: 'chromium',
+        ...devices['iPad (gen 7)'],
+        browserName: 'webkit',
+      },
+    },
+    {
+      name: 'Pixel 5',
+      use: {
         ...devices['Pixel 5'],
-      },
-    },
-    {
-      name: 'Mobile Safari',
-      use: {
-        browserName: 'webkit',
-        ...devices['iPhone 12'],
+        browserName: 'chromium',
       },
     },
   ],

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Snackbar, Alert, Button } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Snackbar, Alert } from '@mui/material';
 import { NotificationPrompt } from './NotificationPrompt';
 import { analytics } from '../utils/analytics';
 
@@ -15,15 +15,13 @@ interface Notification {
   };
 }
 
-export const NotificationManager = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+export const NotificationManager: React.FC = () => {
   const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
 
   useEffect(() => {
-    // Listen for push notifications
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data.type === 'PUSH_NOTIFICATION') {
+    if ('serviceWorker' in navigator && 'Notification' in window) {
+      navigator.serviceWorker.addEventListener('message', (event: MessageEvent<any>) => {
+        if (event.data?.type === 'PUSH_NOTIFICATION') {
           handleNewNotification(event.data.notification);
         }
       });
@@ -31,9 +29,9 @@ export const NotificationManager = () => {
   }, []);
 
   const handleNewNotification = (notification: Notification) => {
-    setNotifications(prev => [...prev, notification]);
     setCurrentNotification(notification);
     analytics.trackEvent({
+      type: 'notification',
       category: 'PWA',
       action: 'notification_received',
       label: notification.title
@@ -44,40 +42,17 @@ export const NotificationManager = () => {
     if (notification.action?.url) {
       window.location.href = notification.action.url;
     }
-    markAsRead(notification.id);
     analytics.trackEvent({
+      type: 'notification',
       category: 'PWA',
       action: 'notification_clicked',
       label: notification.title
     });
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
-  };
-
   return (
     <>
       <NotificationPrompt />
-      <div className="notification-list">
-        {notifications.map(notification => (
-          <div
-            key={notification.id}
-            className={`notification-item ${notification.read ? 'read' : 'unread'}`}
-            onClick={() => handleNotificationClick(notification)}
-          >
-            <h4>{notification.title}</h4>
-            <p>{notification.body}</p>
-            {notification.action && (
-              <Button size="small" color="primary">
-                {notification.action.text}
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
       <Snackbar
         open={!!currentNotification}
         autoHideDuration={6000}
@@ -86,17 +61,8 @@ export const NotificationManager = () => {
         <Alert 
           severity="info" 
           onClose={() => setCurrentNotification(null)}
-          action={
-            currentNotification?.action && (
-              <Button 
-                color="inherit" 
-                size="small"
-                onClick={() => handleNotificationClick(currentNotification)}
-              >
-                {currentNotification.action.text}
-              </Button>
-            )
-          }
+          onClick={() => currentNotification && handleNotificationClick(currentNotification)}
+          sx={{ cursor: 'pointer' }}
         >
           {currentNotification?.title}
         </Alert>

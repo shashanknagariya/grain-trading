@@ -7,6 +7,38 @@ interface SaleBillPrintProps {
   sale: Sale | null;
 }
 
+// Helper function to convert number to words
+const numberToWords = (num: number): string => {
+  const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  const convertLessThanThousand = (n: number): string => {
+    if (n === 0) return '';
+    
+    if (n < 10) return units[n];
+    if (n < 20) return teens[n - 10];
+    if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + units[n % 10] : '');
+    
+    return units[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' and ' + convertLessThanThousand(n % 100) : '');
+  };
+
+  if (num === 0) return 'Zero';
+
+  const billions = Math.floor(num / 1000000000);
+  const millions = Math.floor((num % 1000000000) / 1000000);
+  const thousands = Math.floor((num % 1000000) / 1000);
+  const remainder = num % 1000;
+
+  let result = '';
+  if (billions) result += convertLessThanThousand(billions) + ' Billion ';
+  if (millions) result += convertLessThanThousand(millions) + ' Million ';
+  if (thousands) result += convertLessThanThousand(thousands) + ' Thousand ';
+  if (remainder) result += convertLessThanThousand(remainder);
+
+  return result.trim();
+};
+
 export const SaleBillPrint: React.FC<SaleBillPrintProps> = ({ sale }) => {
   if (!sale) return null;
 
@@ -206,10 +238,4 @@ export const SaleBillPrint: React.FC<SaleBillPrintProps> = ({ sale }) => {
       </div>
     </div>
   );
-};
-
-// Helper function to convert number to words
-function numberToWords(num: number): string {
-  // Add your number to words conversion logic here
-  return ""; // Placeholder
-} 
+}; 

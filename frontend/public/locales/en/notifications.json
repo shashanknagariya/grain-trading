@@ -1,0 +1,24 @@
+{
+  "success": {
+    "created": "{{item}} created successfully",
+    "updated": "{{item}} updated successfully",
+    "deleted": "{{item}} deleted successfully",
+    "saved": "Changes saved successfully"
+  },
+  "error": {
+    "create": "Error creating {{item}}",
+    "update": "Error updating {{item}}",
+    "delete": "Error deleting {{item}}",
+    "save": "Error saving changes"
+  },
+  "info": {
+    "loading": "Loading {{item}}...",
+    "processing": "Processing request...",
+    "noData": "No {{item}} found"
+  },
+  "warning": {
+    "unsavedChanges": "You have unsaved changes",
+    "deleteConfirm": "Are you sure you want to delete this {{item}}?",
+    "limitReached": "You have reached the maximum limit"
+  }
+} 

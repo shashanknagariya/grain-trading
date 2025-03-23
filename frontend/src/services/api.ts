@@ -1,43 +1,58 @@
-import { config } from '../config';
+import axios from 'axios';
+import { cacheManager } from '../utils/cacheStrategy';
+import { handleApiError } from '../utils/errorHandling';
 
-export const API_URL = import.meta.env.MODE === 'development' 
-  ? 'http://localhost:5000'  // Local development backend
-  : 'https://shashanknagariya.pythonanywhere.com';  // Production backend
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  timeout: 10000
+});
 
-export const api = {
-  get: async (endpoint: string) => {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+api.interceptors.response.use(
+  response => response,
+  error => Promise.reject(handleApiError(error))
+);
+
+interface CacheOptions {
+  cacheName?: string;
+  maxAge?: number;
+  bypassCache?: boolean;
+}
+
+export const apiWithCache = {
+  async get<T>(url: string, options: CacheOptions = {}) {
+    const {
+      cacheName = 'api-cache',
+      maxAge = 5 * 60 * 1000,
+      bypassCache = false
+    } = options;
+
+    try {
+      if (!bypassCache) {
+        const cachedData = await cacheManager.get(cacheName, url);
+        if (cachedData) return cachedData as T;
       }
-    });
-    if (!response.ok) throw new Error('API request failed');
-    return response.json();
+
+      const response = await api.get<T>(url);
+      await cacheManager.set(cacheName, url, response.data, maxAge);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
   },
 
-  post: async (endpoint: string, data: any) => {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('API request failed');
-    return response.json();
+  async post<T>(url: string, data: any) {
+    const response = await api.post<T>(url, data);
+    return response.data;
   },
 
-  put: async (endpoint: string, data: any) => {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('API request failed');
-    return response.json();
+  async put<T>(url: string, data: any) {
+    const response = await api.put<T>(url, data);
+    return response.data;
+  },
+
+  async delete(url: string) {
+    await api.delete(url);
   }
 }; 
+
+export const API_URL = process.env.VITE_API_URL || 'http://localhost:5000';

@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Typography } from '@mui/material';
-import { SalesForm } from '../components/SalesForm';
+import { SalesForm, SaleFormData } from '../components/SalesForm';
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../contexts/NotificationContext';
 
 export const CreateSale: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(true);
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (formData: SaleFormData) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales`, {
         method: 'POST',
@@ -36,7 +37,11 @@ export const CreateSale: React.FC = () => {
       <Typography variant="h5" gutterBottom>
         Create New Sale
       </Typography>
-      <SalesForm onSubmit={handleSubmit} />
+      <SalesForm 
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        onSubmit={handleSubmit}
+      />
     </Box>
   );
 }; 

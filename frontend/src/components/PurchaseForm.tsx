@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { formatWeight, formatCurrency } from '../utils/formatters';
-import { useBackgroundSync } from '../hooks/useBackgroundSync';
+import { useNotification } from '../contexts/NotificationContext';
 
 interface Grain {
   id: number;
@@ -27,10 +27,22 @@ interface Godown {
   name: string;
 }
 
+interface PurchaseFormData {
+  grain_id: string;
+  seller_name: string;
+  number_of_bags: string;
+  weight_per_bag: string;
+  extra_weight: string;
+  total_weight: string;
+  rate_per_kg: string;
+  godown_id: string;
+  purchase_date: Date;
+}
+
 interface PurchaseFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: () => void;
+  onSubmit: (data: PurchaseFormData) => void;
 }
 
 export const PurchaseForm: React.FC<PurchaseFormProps> = ({
@@ -38,22 +50,22 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
   onClose,
   onSubmit
 }) => {
-  const [formData, setFormData] = useState({
-    bill_number: '',
+  const [formData, setFormData] = useState<PurchaseFormData>({
     grain_id: '',
-    godown_id: '',
+    seller_name: '',
     number_of_bags: '',
     weight_per_bag: '',
     extra_weight: '0',
+    total_weight: '',
     rate_per_kg: '',
-    supplier_name: '',
+    godown_id: '',
     purchase_date: new Date()
   });
   const [grains, setGrains] = useState<Grain[]>([]);
   const [godowns, setGodowns] = useState<Godown[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { queueSync } = useBackgroundSync();
+  const { showError } = useNotification();
 
   useEffect(() => {
     fetchData();
@@ -86,7 +98,15 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Add validation here
+    if (!formData.grain_id || !formData.seller_name) {
+      showError('Please fill all required fields');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
@@ -113,7 +133,7 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
         throw new Error('Failed to create purchase');
       }
 
-      onSubmit();
+      onSubmit(formData);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create purchase');
@@ -124,14 +144,14 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
 
   const handleClose = () => {
     setFormData({
-      bill_number: '',
       grain_id: '',
-      godown_id: '',
+      seller_name: '',
       number_of_bags: '',
       weight_per_bag: '',
       extra_weight: '0',
+      total_weight: '',
       rate_per_kg: '',
-      supplier_name: '',
+      godown_id: '',
       purchase_date: new Date()
     });
     setError('');
@@ -157,132 +177,134 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Create Purchase</DialogTitle>
-      <DialogContent>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth required>
-              <InputLabel>Grain</InputLabel>
-              <Select
-                value={formData.grain_id}
-                onChange={(e) => setFormData({ ...formData, grain_id: e.target.value })}
-                label="Grain"
-              >
-                {grains.map((grain) => (
-                  <MenuItem key={grain.id} value={grain.id}>{grain.name}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+      <DialogTitle>Create New Purchase</DialogTitle>
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Grain</InputLabel>
+                <Select
+                  value={formData.grain_id}
+                  onChange={(e) => setFormData({ ...formData, grain_id: e.target.value })}
+                  label="Grain"
+                >
+                  {grains.map((grain) => (
+                    <MenuItem key={grain.id} value={grain.id}>{grain.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
 
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth required>
-              <InputLabel>Godown</InputLabel>
-              <Select
-                value={formData.godown_id}
-                onChange={(e) => setFormData({ ...formData, godown_id: e.target.value })}
-                label="Godown"
-              >
-                {godowns.map((godown) => (
-                  <MenuItem key={godown.id} value={godown.id}>{godown.name}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Godown</InputLabel>
+                <Select
+                  value={formData.godown_id}
+                  onChange={(e) => setFormData({ ...formData, godown_id: e.target.value })}
+                  label="Godown"
+                >
+                  {godowns.map((godown) => (
+                    <MenuItem key={godown.id} value={godown.id}>{godown.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Number of Bags"
-              type="number"
-              value={formData.number_of_bags}
-              onChange={(e) => setFormData({ ...formData, number_of_bags: e.target.value })}
-              required
-            />
-          </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Number of Bags"
+                type="number"
+                value={formData.number_of_bags}
+                onChange={(e) => setFormData({ ...formData, number_of_bags: e.target.value })}
+                required
+              />
+            </Grid>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Weight per Bag (kg)"
-              type="number"
-              value={formData.weight_per_bag}
-              onChange={(e) => setFormData({ ...formData, weight_per_bag: e.target.value })}
-              required
-            />
-          </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Weight per Bag (kg)"
+                type="number"
+                value={formData.weight_per_bag}
+                onChange={(e) => setFormData({ ...formData, weight_per_bag: e.target.value })}
+                required
+              />
+            </Grid>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Extra Weight (kg)"
-              type="number"
-              value={formData.extra_weight}
-              onChange={(e) => setFormData({ ...formData, extra_weight: e.target.value })}
-            />
-          </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Extra Weight (kg)"
+                type="number"
+                value={formData.extra_weight}
+                onChange={(e) => setFormData({ ...formData, extra_weight: e.target.value })}
+              />
+            </Grid>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Rate per KG"
-              type="number"
-              value={formData.rate_per_kg}
-              onChange={(e) => setFormData({ ...formData, rate_per_kg: e.target.value })}
-              required
-            />
-          </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Rate per KG"
+                type="number"
+                value={formData.rate_per_kg}
+                onChange={(e) => setFormData({ ...formData, rate_per_kg: e.target.value })}
+                required
+              />
+            </Grid>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Supplier Name"
-              value={formData.supplier_name}
-              onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
-              required
-            />
-          </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Supplier Name"
+                value={formData.seller_name}
+                onChange={(e) => setFormData({ ...formData, seller_name: e.target.value })}
+                required
+              />
+            </Grid>
 
-          <Grid item xs={12} md={6}>
-            <DatePicker
-              label="Purchase Date"
-              value={formData.purchase_date}
-              onChange={(date) => setFormData({ ...formData, purchase_date: date || new Date() })}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </Grid>
+            <Grid item xs={12} md={6}>
+              <DatePicker
+                label="Purchase Date"
+                value={formData.purchase_date}
+                onChange={(date) => setFormData({ ...formData, purchase_date: date || new Date() })}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </Grid>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Total Weight"
-              value={totalWeight}
-              InputProps={{ readOnly: true }}
-            />
-          </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Total Weight"
+                value={totalWeight}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Total Amount"
-              value={totalAmount}
-              InputProps={{ readOnly: true }}
-            />
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Total Amount"
+                value={totalAmount}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
           </Grid>
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button 
-          onClick={handleSubmit} 
-          variant="contained" 
-          disabled={loading}
-        >
-          Create
-        </Button>
-      </DialogActions>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button 
+            type="submit" 
+            variant="contained" 
+            disabled={loading}
+          >
+            Create
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 }; 

@@ -4,7 +4,6 @@ import {
   Box,
   Paper,
   Table,
-  Chip,
   TableBody,
   TableCell,
   TableContainer,
@@ -16,8 +15,6 @@ import {
   Select,
   MenuItem,
   FormControl,
-  Tooltip,
-  InputLabel,
   Button,
   IconButton
 } from '@mui/material';
@@ -26,29 +23,87 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon
 } from '@mui/icons-material';
-import { userService, type User, type CreateUserData, type UpdateUserData } from '../services/userService';
-import { Roles, Permissions } from '../constants/permissions';
+import { userService } from '../services/userService';
+import { Permissions } from '../constants/permissions';
 import { PermissionGuard } from '../components/PermissionGuard';
 import { useAuth } from '../contexts/AuthContext';
 import { UserFormDialog } from '../components/UserFormDialog';
 import { DeleteConfirmationDialog } from '../components/DeleteConfirmationDialog';
+import { useNotification } from '../contexts/NotificationContext';
+import { formatDate } from '../utils/formatters';
+
+// Define the types that were previously imported
+interface CreateUserData {
+  username: string;
+  email: string;
+  password: string;
+  role: string;
+  permissions: string[];
+}
+
+interface UpdateUserData {
+  email?: string;
+  role?: string;
+  permissions?: string[];
+}
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  createdAt: Date;
+  lastLogin: Date;
+  permissions: string[];  // Make this required
+}
+
+// Use User interface instead of LocalUser
+type LocalUser = User;  // Now they're the same type
+
+// Rename to avoid conflict with imported constant
+const USER_ROLES = {
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  USER: 'USER'
+} as const;
+
+type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
 
 export const Users: FC = () => {
   const { user: currentUser } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<LocalUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<LocalUser | null>(null);
+  const [userToEdit, setUserToEdit] = useState<User | undefined>(undefined);
+  const { showError, showSuccess } = useNotification();
 
   const loadUsers = async () => {
     try {
-      const data = await userService.getAll();
-      setUsers(data);
-      setError('');
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+
+      const data = await response.json();
+      // Convert string dates to Date objects
+      const formattedUsers = data.map((user: any) => ({
+        ...user,
+        createdAt: new Date(user.createdAt),
+        lastLogin: new Date(user.lastLogin)
+      }));
+      setUsers(formattedUsers);
     } catch (err) {
-      setError('Failed to load users');
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      showError('Failed to load users');
     } finally {
       setLoading(false);
     }
@@ -58,12 +113,25 @@ export const Users: FC = () => {
     loadUsers();
   }, []);
 
-  const handleRoleChange = async (userId: number, newRole: string) => {
+  const handleRoleChange = async (userId: number, newRole: UserRole) => {
     try {
-      await userService.updateRole(userId, newRole);
-      loadUsers();
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${userId}/role`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ role: newRole })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update role');
+      }
+
+      await loadUsers();
+      showSuccess('Role updated successfully');
     } catch (err) {
-      setError('Failed to update user role');
+      showError('Failed to update user role');
     }
   };
 
@@ -72,6 +140,7 @@ export const Users: FC = () => {
       try {
         await userService.create(userData);
         loadUsers();
+        showSuccess('User created successfully');
       } catch (err) {
         throw err;
       }
@@ -83,7 +152,8 @@ export const Users: FC = () => {
     try {
       await userService.update(userToEdit.id, userData);
       loadUsers();
-      setUserToEdit(null);
+      setUserToEdit(undefined);
+      showSuccess('User updated successfully');
     } catch (err) {
       throw err;
     }
@@ -96,6 +166,7 @@ export const Users: FC = () => {
       await userService.delete(userToDelete.id);
       loadUsers();
       setUserToDelete(null);
+      showSuccess('User deleted successfully');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete user');
     }
@@ -106,6 +177,14 @@ export const Users: FC = () => {
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
         <CircularProgress />
       </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ m: 2 }}>
+        {error}
+      </Alert>
     );
   }
 
@@ -127,8 +206,6 @@ export const Users: FC = () => {
           </Button>
         </Box>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -136,7 +213,8 @@ export const Users: FC = () => {
                 <TableCell>Username</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Role</TableCell>
-                <TableCell>Permissions</TableCell>
+                <TableCell>Created</TableCell>
+                <TableCell>Last Login</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -149,11 +227,11 @@ export const Users: FC = () => {
                     <FormControl fullWidth>
                       <Select
                         value={user.role}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
                         size="small"
                         disabled={user.id === currentUser?.id}
                       >
-                        {Object.values(Roles).map((role) => (
+                        {Object.values(USER_ROLES).map((role) => (
                           <MenuItem key={role} value={role}>
                             {role}
                           </MenuItem>
@@ -161,19 +239,8 @@ export const Users: FC = () => {
                       </Select>
                     </FormControl>
                   </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                      {user.permissions?.map((permission) => (
-                        <Tooltip key={permission} title={permission}>
-                          <Chip
-                            label={permission.split(':')[1]}
-                            size="small"
-                            color={permission.includes('admin') ? 'error' : 'primary'}
-                          />
-                        </Tooltip>
-                      ))}
-                    </Box>
-                  </TableCell>
+                  <TableCell>{formatDate(user.createdAt)}</TableCell>
+                  <TableCell>{formatDate(user.lastLogin)}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                       <IconButton
@@ -210,10 +277,10 @@ export const Users: FC = () => {
 
         <UserFormDialog
           open={!!userToEdit}
-          onClose={() => setUserToEdit(null)}
+          onClose={() => setUserToEdit(undefined)}
           onSubmit={handleEditUser}
           mode="edit"
-          initialData={userToEdit || undefined}
+          initialData={userToEdit}
         />
 
         <DeleteConfirmationDialog

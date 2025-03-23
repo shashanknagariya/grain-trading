@@ -1,0 +1,23 @@
+{
+  "app": {
+    "name": "बीपीएमपी",
+    "title": "अनाज व्यापार प्रबंधन"
+  },
+  "navigation": {
+    "dashboard": "डैशबोर्ड",
+    "purchases": "खरीद",
+    "sales": "बिक्री",
+    "inventory": "इन्वेंटरी",
+    "grains": "अनाज",
+    "godowns": "गोदाम",
+    "users": "उपयोगकर्ता"
+  },
+  "actions": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "create": "बनाएं",
+    "back": "वापस"
+  }
+} 

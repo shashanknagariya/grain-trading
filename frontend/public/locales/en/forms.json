@@ -1,0 +1,25 @@
+{
+  "purchase": {
+    "title": "Create Purchase",
+    "fields": {
+      "billNumber": "Bill Number",
+      "grainType": "Grain Type",
+      "quantity": "Quantity",
+      "price": "Price",
+      "supplier": "Supplier",
+      "date": "Purchase Date"
+    },
+    "placeholders": {
+      "billNumber": "Enter bill number",
+      "grainType": "Select grain type",
+      "quantity": "Enter quantity",
+      "price": "Enter price per unit",
+      "supplier": "Enter supplier name",
+      "date": "Select date"
+    },
+    "helpers": {
+      "quantity": "Enter quantity in quintals",
+      "price": "Enter price per quintal"
+    }
+  }
+} 

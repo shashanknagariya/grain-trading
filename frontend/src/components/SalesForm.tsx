@@ -14,44 +14,44 @@ import { GodownDetail } from '../types/inventory';
 import { GodownBagSelector } from './GodownBagSelector';
 import { useNotification } from '../contexts/NotificationContext';
 
-interface SalesFormProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: () => void;
-}
-
-interface SalesFormData {
+export interface SaleFormData {
   grain_id: string;
   buyer_name: string;
-  number_of_bags: string;
+  godown_details: Array<{
+    godown_id: string;
+    number_of_bags: number;
+  }>;
   total_weight: string;
   rate_per_kg: string;
   transportation_mode: string;
   vehicle_number: string;
   driver_name: string;
-  lr_number: string;
-  po_number: string;
-  buyer_gst: string;
-  godown_details: GodownDetail[];
+  lr_number?: string;
+  po_number?: string;
+  buyer_gst?: string;
+  number_of_bags: string;
+}
+
+interface SalesFormProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: SaleFormData) => void;
 }
 
 export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit }) => {
   console.log('SalesForm rendered:', { open });
 
   const [grains, setGrains] = useState<Grain[]>([]);
-  const [formData, setFormData] = useState<SalesFormData>({
+  const [formData, setFormData] = useState<SaleFormData>({
     grain_id: '',
     buyer_name: '',
-    number_of_bags: '',
+    godown_details: [],
     total_weight: '',
     rate_per_kg: '',
-    transportation_mode: 'road',
+    transportation_mode: '',
     vehicle_number: '',
     driver_name: '',
-    lr_number: '',
-    po_number: '',
-    buyer_gst: '',
-    godown_details: []
+    number_of_bags: '',
   });
   const { showError } = useNotification();
 
@@ -118,21 +118,18 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
         throw new Error(error.error || 'Failed to create sale');
       }
 
-      onSubmit();
+      onSubmit(formData);
       onClose();
       setFormData({
         grain_id: '',
         buyer_name: '',
-        number_of_bags: '',
+        godown_details: [],
         total_weight: '',
         rate_per_kg: '',
-        transportation_mode: 'road',
+        transportation_mode: '',
         vehicle_number: '',
         driver_name: '',
-        lr_number: '',
-        po_number: '',
-        buyer_gst: '',
-        godown_details: []
+        number_of_bags: '',
       });
     } catch (error) {
       showError(error instanceof Error ? error.message : 'Failed to create sale');
@@ -149,8 +146,13 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
   const handleGodownDetailsChange = (godownDetails: GodownDetail[]) => {
     setFormData(prev => ({
       ...prev,
-      godown_details: godownDetails,
-      number_of_bags: godownDetails.reduce((sum, detail) => sum + Number(detail.number_of_bags), 0).toString()
+      godown_details: godownDetails.map(detail => ({
+        godown_id: detail.godown_id.toString(),
+        number_of_bags: detail.number_of_bags
+      })),
+      number_of_bags: godownDetails.reduce((sum, detail) => 
+        sum + Number(detail.number_of_bags), 0
+      ).toString()
     }));
   };
 

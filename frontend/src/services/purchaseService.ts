@@ -1,5 +1,4 @@
 import { getAuthHeader } from '../utils/auth';
-import type { Grain } from './grainService';
 
 export interface Purchase {
   id: number;

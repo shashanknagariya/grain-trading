@@ -1,0 +1,23 @@
+{
+  "app": {
+    "name": "BPMP",
+    "title": "Grain Trading Management"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "purchases": "Purchases",
+    "sales": "Sales",
+    "inventory": "Inventory",
+    "grains": "Grains",
+    "godowns": "Godowns",
+    "users": "Users"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back"
+  }
+} 

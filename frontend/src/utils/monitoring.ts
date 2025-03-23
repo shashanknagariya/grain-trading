@@ -1,9 +1,9 @@
+import { onCLS, onFCP, onFID, onLCP, onTTFB } from 'web-vitals';
+
 interface PerformanceMetrics {
-  fcp: number;  // First Contentful Paint
-  lcp: number;  // Largest Contentful Paint
-  fid: number;  // First Input Delay
-  cls: number;  // Cumulative Layout Shift
-  ttfb: number; // Time to First Byte
+  name: string;
+  value: number;
+  id?: string;
 }
 
 interface OfflineUsageData {
@@ -13,36 +13,44 @@ interface OfflineUsageData {
   syncedData: boolean;
 }
 
-class MonitoringService {
+export class MonitoringService {
   private offlineUsage: OfflineUsageData[] = [];
-  private isOffline = !navigator.onLine;
+  private currentOfflineSession: OfflineUsageData | null = null;
 
   constructor() {
-    this.setupOfflineTracking();
-    this.setupPerformanceTracking();
+    this.initializeMonitoring();
   }
 
-  private setupOfflineTracking() {
+  private initializeMonitoring() {
+    // Network monitoring
     window.addEventListener('online', () => {
-      this.isOffline = false;
       this.recordOfflineSession();
     });
 
     window.addEventListener('offline', () => {
-      this.isOffline = true;
       this.startOfflineSession();
     });
+
+    // Error monitoring
+    window.addEventListener('error', (event) => {
+      this.handleError(event);
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+      this.handleError(event);
+    });
+
+    // Performance monitoring
+    this.initializePerformanceMonitoring();
   }
 
-  private setupPerformanceTracking() {
+  private initializePerformanceMonitoring() {
     // Track Web Vitals
-    if ('web-vitals' in window) {
-      webVitals.onFCP(this.handleFCP.bind(this));
-      webVitals.onLCP(this.handleLCP.bind(this));
-      webVitals.onFID(this.handleFID.bind(this));
-      webVitals.onCLS(this.handleCLS.bind(this));
-      webVitals.onTTFB(this.handleTTFB.bind(this));
-    }
+    onFCP((metric) => this.handleFCP(metric));
+    onLCP((metric) => this.handleLCP(metric));
+    onFID((metric) => this.handleFID(metric));
+    onCLS((metric) => this.handleCLS(metric));
+    onTTFB((metric) => this.handleTTFB(metric));
 
     // Track Service Worker Performance
     if ('performance' in window) {
@@ -55,8 +63,6 @@ class MonitoringService {
       observer.observe({ entryTypes: ['resource', 'navigation'] });
     }
   }
-
-  private currentOfflineSession: OfflineUsageData | null = null;
 
   private startOfflineSession() {
     this.currentOfflineSession = {
@@ -96,24 +102,23 @@ class MonitoringService {
     }
   }
 
-  // Web Vitals Handlers
-  private handleFCP(metric: any) {
+  private handleFCP(metric: PerformanceMetrics) {
     this.trackPerformanceMetric('FCP', metric.value);
   }
 
-  private handleLCP(metric: any) {
+  private handleLCP(metric: PerformanceMetrics) {
     this.trackPerformanceMetric('LCP', metric.value);
   }
 
-  private handleFID(metric: any) {
+  private handleFID(metric: PerformanceMetrics) {
     this.trackPerformanceMetric('FID', metric.value);
   }
 
-  private handleCLS(metric: any) {
+  private handleCLS(metric: PerformanceMetrics) {
     this.trackPerformanceMetric('CLS', metric.value);
   }
 
-  private handleTTFB(metric: any) {
+  private handleTTFB(metric: PerformanceMetrics) {
     this.trackPerformanceMetric('TTFB', metric.value);
   }
 
@@ -123,18 +128,12 @@ class MonitoringService {
     }
   }
 
-  private async trackPerformanceMetric(name: string, value: number) {
-    try {
-      await fetch('/api/analytics/performance', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ metric: name, value })
-      });
-    } catch (error) {
-      console.error('Failed to send performance metric:', error);
-    }
+  private handleError(error: Error | ErrorEvent | PromiseRejectionEvent) {
+    console.error('Error tracked:', error);
+  }
+
+  private trackPerformanceMetric(name: string, value: number) {
+    console.log(`Performance metric - ${name}:`, value);
   }
 }
 

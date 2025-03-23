@@ -14,7 +14,6 @@ import {
   Warehouse as WarehouseIcon,
   People as PeopleIcon
 } from '@mui/icons-material';
-import { usePermission } from '../hooks/usePermission';
 
 interface LayoutProps {
   children: React.ReactNode;

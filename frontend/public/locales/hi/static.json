@@ -1,0 +1,43 @@
+{
+  "pages": {
+    "dashboard": {
+      "title": "डैशबोर्ड",
+      "summary": "आपके व्यवसाय का अवलोकन",
+      "cards": {
+        "totalPurchases": "कुल खरीद",
+        "totalSales": "कुल बिक्री",
+        "inventory": "वर्तमान स्टॉक",
+        "revenue": "राजस्व"
+      },
+      "charts": {
+        "monthlyTrends": "मासिक प्रवृत्तियां",
+        "topGrains": "शीर्ष अनाज",
+        "salesByRegion": "क्षेत्र के अनुसार बिक्री"
+      }
+    },
+    "inventory": {
+      "title": "इन्वेंटरी प्रबंधन",
+      "subtitle": "अपने अनाज स्टॉक को ट्रैक और प्रबंधित करें",
+      "sections": {
+        "current": "वर्तमान स्टॉक",
+        "incoming": "आने वाला स्टॉक",
+        "outgoing": "जाने वाला स्टॉक"
+      }
+    }
+  },
+  "common": {
+    "filters": {
+      "title": "फ़िल्टर",
+      "dateRange": "तिथि सीमा",
+      "status": "स्थिति",
+      "type": "प्रकार",
+      "apply": "फ़िल्टर लागू करें",
+      "clear": "सभी साफ़ करें"
+    },
+    "table": {
+      "noData": "कोई डेटा उपलब्ध नहीं है",
+      "loading": "डेटा लोड हो रहा है...",
+      "rowsPerPage": "प्रति पृष्ठ पंक्तियां"
+    }
+  }
+} 

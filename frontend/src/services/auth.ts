@@ -1,4 +1,5 @@
 import { API_URL } from './api';
+import type { LoginCredentials } from '../types/auth';
 
 export const login = async (credentials: LoginCredentials) => {
   const response = await fetch(`${API_URL}/api/auth/login`, {
@@ -8,5 +9,10 @@ export const login = async (credentials: LoginCredentials) => {
     },
     body: JSON.stringify(credentials)
   });
+
+  if (!response.ok) {
+    throw new Error('Login failed');
+  }
+
   return response.json();
 }; 
