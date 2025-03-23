@@ -1,13 +1,15 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import enTranslations from './locales/en.json';
+import hiTranslations from './locales/hi.json';
 
 // Import your translation files
 const resources = {
   en: {
-    translation: require('./locales/en.json')
+    translation: enTranslations
   },
   hi: {
-    translation: require('./locales/hi.json')
+    translation: hiTranslations
   }
 };
 

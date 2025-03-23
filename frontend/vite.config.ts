@@ -4,7 +4,7 @@ import type { UserConfig } from 'vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
-  base: '',
+  base: './',
   plugins: [
     react({
       jsxRuntime: 'automatic',
