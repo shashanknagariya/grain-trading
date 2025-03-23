@@ -26,6 +26,8 @@ const config: UserConfig = {
   },
   build: {
     outDir: 'dist',
+    assetsDir: 'assets',
+    emptyOutDir: true,
     sourcemap: process.env.NODE_ENV !== 'production',
     minify: 'terser',
     rollupOptions: {
