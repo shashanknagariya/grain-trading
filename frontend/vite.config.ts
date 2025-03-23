@@ -4,7 +4,7 @@ import type { UserConfig } from 'vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
-  base: './',
+  base: '/',
   plugins: [
     react({
       jsxRuntime: 'automatic',
@@ -26,15 +26,17 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    assetsDir: 'assets',
+    assetsDir: '',
     emptyOutDir: true,
     sourcemap: false,
+    copyPublicDir: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'mui-vendor': ['@mui/material', '@mui/icons-material'],
-          'utils-vendor': ['axios', 'date-fns']
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name.endsWith('.png')) {
+            return 'icons/[name][extname]'
+          }
+          return 'assets/[name]-[hash][extname]'
         }
       }
     }
