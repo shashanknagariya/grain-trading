@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  command = "npm install && npm install --save-dev vite typescript @vitejs/plugin-react && npx vite build"
+  command = "npm install -g vite && npm install && npm run build"
   publish = "dist"
 
 [build.environment]
