@@ -36,13 +36,25 @@ interface PurchaseFormData {
   total_weight: string;
   rate_per_kg: string;
   godown_id: string;
-  purchase_date: Date;
+  purchase_date: Date | null;
+}
+
+interface PurchasePayload {
+  grain_id: number;
+  seller_name: string;
+  number_of_bags: number;
+  weight_per_bag: number;
+  extra_weight: number;
+  total_weight: number;
+  rate_per_kg: number;
+  godown_id: number;
+  purchase_date: string;
 }
 
 interface PurchaseFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: PurchaseFormData) => void;
+  onSubmit: (data: PurchasePayload) => void;
 }
 
 export const PurchaseForm: React.FC<PurchaseFormProps> = ({
@@ -95,35 +107,73 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
       setGodowns(godownsData);
     } catch (err) {
       setError('Failed to load form data');
+      showError('Failed to load form data');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Add validation here
-    if (!formData.grain_id || !formData.seller_name) {
-      showError('Please fill all required fields');
-      return;
-    }
-
     try {
       setLoading(true);
       setError('');
 
-      const totalWeight = (parseInt(formData.number_of_bags) * parseFloat(formData.weight_per_bag)) + (parseFloat(formData.extra_weight) || 0);
-      
-      const payload = {
-        grain_id: parseInt(formData.grain_id),
-        seller_name: formData.seller_name,
+      // Validate all required fields first
+      const requiredFields: Record<string, string> = {
+        grain_id: 'Grain',
+        seller_name: 'Seller Name',
+        number_of_bags: 'Number of Bags',
+        weight_per_bag: 'Weight per Bag',
+        rate_per_kg: 'Rate per KG',
+        godown_id: 'Godown'
+      };
+
+      const missingFields: string[] = [];
+      for (const [field, label] of Object.entries(requiredFields)) {
+        if (!formData[field as keyof PurchaseFormData] || String(formData[field as keyof PurchaseFormData]).trim() === '') {
+          missingFields.push(label);
+        }
+      }
+
+      if (missingFields.length > 0) {
+        showError(`Missing required fields: ${missingFields.join(', ')}`);
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      }
+
+      // Parse and validate numeric fields
+      const numberFields = {
         number_of_bags: parseInt(formData.number_of_bags),
         weight_per_bag: parseFloat(formData.weight_per_bag),
-        extra_weight: parseFloat(formData.extra_weight) || 0,
-        total_weight: totalWeight,
         rate_per_kg: parseFloat(formData.rate_per_kg),
-        godown_id: parseInt(formData.godown_id),
-        purchase_date: formData.purchase_date.toISOString()
+        extra_weight: parseFloat(formData.extra_weight || '0')
       };
+
+      // Validate numeric fields
+      for (const [field, value] of Object.entries(numberFields)) {
+        if (isNaN(value) || value < 0) {
+          showError(`Invalid value for ${field}`);
+          throw new Error(`Invalid value for ${field}`);
+        }
+      }
+
+      // Calculate total weight
+      const totalWeight = (numberFields.number_of_bags * numberFields.weight_per_bag) + numberFields.extra_weight;
+
+      // Prepare the payload
+      const payload: PurchasePayload = {
+        grain_id: parseInt(formData.grain_id),
+        seller_name: formData.seller_name.trim(),
+        number_of_bags: numberFields.number_of_bags,
+        weight_per_bag: numberFields.weight_per_bag,
+        extra_weight: numberFields.extra_weight,
+        total_weight: totalWeight,
+        rate_per_kg: numberFields.rate_per_kg,
+        godown_id: parseInt(formData.godown_id),
+        purchase_date: (formData.purchase_date || new Date()).toISOString()
+      };
+
+      // Log the payload for debugging
+      console.log('Submitting purchase with payload:', payload);
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases`, {
         method: 'POST',
@@ -134,13 +184,23 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
         body: JSON.stringify(payload)
       });
 
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (e) {
+        // If response is not JSON
+        responseData = { message: 'Server error' };
+      }
+
       if (!response.ok) {
-        throw new Error('Failed to create purchase');
+        showError(responseData.message || `Failed to create purchase: ${response.status}`);
+        throw new Error(responseData.message || `Failed to create purchase: ${response.status}`);
       }
 
       onSubmit(payload);
       handleClose();
     } catch (err) {
+      console.error('Purchase creation error:', err);
       setError(err instanceof Error ? err.message : 'Failed to create purchase');
     } finally {
       setLoading(false);
@@ -168,6 +228,13 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
     const weightPerBag = parseFloat(formData.weight_per_bag) || 0;
     const extraWeight = parseFloat(formData.extra_weight) || 0;
     const ratePerKg = parseFloat(formData.rate_per_kg) || 0;
+
+    if (isNaN(bags) || isNaN(weightPerBag) || isNaN(extraWeight) || isNaN(ratePerKg)) {
+      return {
+        totalWeight: formatWeight(0),
+        totalAmount: formatCurrency(0)
+      };
+    }
 
     const totalWeight = (bags * weightPerBag) + extraWeight;
     const totalAmount = totalWeight * ratePerKg;
@@ -275,7 +342,7 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
               <DatePicker
                 label="Purchase Date"
                 value={formData.purchase_date}
-                onChange={(date) => setFormData({ ...formData, purchase_date: date || new Date() })}
+                onChange={(date) => setFormData({ ...formData, purchase_date: date })}
                 slotProps={{ textField: { fullWidth: true } }}
               />
             </Grid>
@@ -304,9 +371,10 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
           <Button 
             type="submit" 
             variant="contained" 
+            color="primary"
             disabled={loading}
           >
-            Create
+            {loading ? 'Creating...' : 'Create Purchase'}
           </Button>
         </DialogActions>
       </form>
