@@ -41,6 +41,9 @@ export default defineConfig({
       }
     }
   },
+  optimizeDeps: {
+    include: ['chart.js', 'react-chartjs-2']
+  },
   server: {
     port: 3000,
     strictPort: true
