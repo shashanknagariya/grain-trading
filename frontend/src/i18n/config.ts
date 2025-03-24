@@ -4,7 +4,6 @@ import enTranslations from './locales/en.json';
 import hiTranslations from './locales/hi.json';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-// Import your translation files
 const resources = {
   en: {
     translation: enTranslations
@@ -14,15 +13,15 @@ const resources = {
   }
 };
 
-// Get saved language preference or use browser language
-// const savedLanguage = localStorage.getItem('language') || 
-//   (navigator.language.startsWith('hi') ? 'hi' : 'en');
+const savedLanguage = localStorage.getItem('language');
+const defaultLanguage = savedLanguage || (navigator.language.startsWith('hi') ? 'hi' : 'en');
 
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
+  .use(LanguageDetector)
   .init({
     resources,
+    lng: defaultLanguage,
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false
@@ -31,12 +30,16 @@ i18n
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'language',
       caches: ['localStorage']
+    },
+    react: {
+      useSuspense: false
     }
   });
 
-// Save language preference when it changes
-// i18n.on('languageChanged', (lng) => {
-//   localStorage.setItem('language', lng);
-// });
+i18n.on('languageChanged', (lng) => {
+  localStorage.setItem('language', lng);
+  document.documentElement.lang = lng;
+  document.documentElement.dir = lng === 'hi' ? 'ltr' : 'ltr';
+});
 
 export default i18n;
