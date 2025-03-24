@@ -26,15 +26,22 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    assetsDir: '',
+    assetsDir: 'assets',
     emptyOutDir: true,
-    sourcemap: false,
+    sourcemap: true,
     copyPublicDir: true,
+    minify: 'terser',
     rollupOptions: {
       output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom', '@mui/material'],
+          chart: ['chart.js', 'react-chartjs-2']
+        },
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           if (assetInfo.name.endsWith('.png')) {
-            return 'icons/[name][extname]'
+            return 'icons/[name]-[hash][extname]'
           }
           return 'assets/[name]-[hash][extname]'
         }
@@ -42,10 +49,13 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['chart.js', 'react-chartjs-2']
+    include: ['chart.js', 'react-chartjs-2', '@mui/material', '@emotion/react', '@emotion/styled']
   },
   server: {
     port: 3000,
-    strictPort: true
+    strictPort: true,
+    hmr: {
+      overlay: true
+    }
   }
 })
