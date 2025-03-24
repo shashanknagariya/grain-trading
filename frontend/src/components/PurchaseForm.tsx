@@ -41,7 +41,7 @@ interface PurchaseFormData {
 
 interface PurchasePayload {
   grain_id: number;
-  seller_name: string;
+  supplier_name: string;
   number_of_bags: number;
   weight_per_bag: number;
   extra_weight: number;
@@ -167,7 +167,7 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
       // Prepare the payload with additional fields
       const payload: PurchasePayload = {
         grain_id: parseInt(formData.grain_id),
-        seller_name: formData.seller_name.trim(),
+        supplier_name: formData.seller_name.trim(),
         number_of_bags: numberFields.number_of_bags,
         weight_per_bag: numberFields.weight_per_bag,
         extra_weight: numberFields.extra_weight,
