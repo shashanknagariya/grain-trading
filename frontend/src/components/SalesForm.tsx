@@ -129,7 +129,7 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
                 select
                 fullWidth
                 name="grain_id"
-                label={t('grains.name')}
+                label={t('sales.grain_name')}
                 value={formData.grain_id}
                 onChange={handleChange}
                 required
@@ -155,7 +155,7 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
               <TextField
                 fullWidth
                 name="buyer_gst"
-                label={t('sales.buyer_gst')}
+                label={t('sales.customer_gst')}
                 value={formData.buyer_gst}
                 onChange={handleChange}
               />
