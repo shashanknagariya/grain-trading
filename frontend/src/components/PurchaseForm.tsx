@@ -111,29 +111,34 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
       setLoading(true);
       setError('');
 
+      const totalWeight = (parseInt(formData.number_of_bags) * parseFloat(formData.weight_per_bag)) + (parseFloat(formData.extra_weight) || 0);
+      
+      const payload = {
+        grain_id: parseInt(formData.grain_id),
+        seller_name: formData.seller_name,
+        number_of_bags: parseInt(formData.number_of_bags),
+        weight_per_bag: parseFloat(formData.weight_per_bag),
+        extra_weight: parseFloat(formData.extra_weight) || 0,
+        total_weight: totalWeight,
+        rate_per_kg: parseFloat(formData.rate_per_kg),
+        godown_id: parseInt(formData.godown_id),
+        purchase_date: formData.purchase_date.toISOString()
+      };
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...formData,
-          grain_id: parseInt(formData.grain_id),
-          godown_id: parseInt(formData.godown_id),
-          number_of_bags: parseInt(formData.number_of_bags),
-          weight_per_bag: parseFloat(formData.weight_per_bag),
-          extra_weight: parseFloat(formData.extra_weight),
-          rate_per_kg: parseFloat(formData.rate_per_kg),
-          purchase_date: formData.purchase_date.toISOString()
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
         throw new Error('Failed to create purchase');
       }
 
-      onSubmit(formData);
+      onSubmit(payload);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create purchase');
