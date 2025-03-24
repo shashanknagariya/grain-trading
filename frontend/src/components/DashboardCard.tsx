@@ -5,12 +5,16 @@ import { CardType } from '../types/dashboard';
 
 export interface DashboardCardProps {
   title: string;
-  value: number;
+  value: number | null;
   type: CardType;
 }
 
 export const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, type }) => {
-  const formatValue = (value: number, type: CardType) => {
+  const formatValue = (value: number | null, type: CardType) => {
+    if (value === null || value === undefined) {
+      return '-';
+    }
+
     switch (type) {
       case 'currency':
         return formatCurrency(value);
@@ -20,7 +24,7 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, type
       case 'user':
         return value.toLocaleString();
       default:
-        return value;
+        return value.toString();
     }
   };
 

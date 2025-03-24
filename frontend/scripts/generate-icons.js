@@ -3,39 +3,56 @@ const fs = require('fs');
 const path = require('path');
 
 const ICONS_DIR = path.join(__dirname, '../public/icons');
+const SOURCE_ICON = path.join(__dirname, '../src/assets/logo.png');
 
 // Create icons directory if it doesn't exist
 if (!fs.existsSync(ICONS_DIR)) {
   fs.mkdirSync(ICONS_DIR, { recursive: true });
 }
 
-// Source image (you'll need to provide this)
-const SOURCE_ICON = path.join(__dirname, '../src/assets/logo.png');
+// Only generate icons if they don't exist
+const generateIconIfNotExists = async (size, filename) => {
+  const outputPath = path.join(ICONS_DIR, filename);
+  
+  if (!fs.existsSync(outputPath)) {
+    console.log(`Generating ${filename}...`);
+    await sharp(SOURCE_ICON)
+      .resize(size, size)
+      .toFile(outputPath);
+  }
+};
 
-const SIZES = [192, 512];
+async function generateIcons() {
+  try {
+    // Generate standard icons
+    await generateIconIfNotExists(192, 'icon-192x192.png');
+    await generateIconIfNotExists(512, 'icon-512x512.png');
 
-SIZES.forEach(size => {
-  sharp(SOURCE_ICON)
-    .resize(size, size)
-    .toFile(path.join(ICONS_DIR, `icon-${size}x${size}.png`))
-    .then(info => console.log(`Generated ${size}x${size} icon`))
-    .catch(err => console.error(`Error generating ${size}x${size} icon:`, err));
-});
+    // Generate maskable icon with padding
+    const maskableOutput = path.join(ICONS_DIR, 'maskable-icon.png');
+    if (!fs.existsSync(maskableOutput)) {
+      console.log('Generating maskable icon...');
+      await sharp(SOURCE_ICON)
+        .resize(512, 512, {
+          fit: 'contain',
+          background: { r: 255, g: 255, b: 255, alpha: 1 }
+        })
+        .extend({
+          top: 64,
+          bottom: 64,
+          left: 64,
+          right: 64,
+          background: { r: 255, g: 255, b: 255, alpha: 1 }
+        })
+        .resize(512, 512)
+        .toFile(maskableOutput);
+    }
 
-// Generate maskable icon (with padding for safe area)
-sharp(SOURCE_ICON)
-  .resize(512, 512, {
-    fit: 'contain',
-    background: { r: 255, g: 255, b: 255, alpha: 1 }
-  })
-  .extend({
-    top: 64,
-    bottom: 64,
-    left: 64,
-    right: 64,
-    background: { r: 255, g: 255, b: 255, alpha: 1 }
-  })
-  .resize(512, 512)
-  .toFile(path.join(ICONS_DIR, 'maskable-icon.png'))
-  .then(() => console.log('Generated maskable icon'))
-  .catch(err => console.error('Error generating maskable icon:', err)); 
+    console.log('Icon generation complete!');
+  } catch (error) {
+    console.error('Error generating icons:', error);
+    process.exit(1);
+  }
+}
+
+generateIcons(); 

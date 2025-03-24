@@ -25,3 +25,7 @@ dist-ssr
 
 # Temporarily disabled test files
 src/_disabled_tests/
+
+# Generated icons
+public/icons/*.png
+!public/icons/.gitkeep

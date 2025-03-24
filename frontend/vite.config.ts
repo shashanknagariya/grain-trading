@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import type { UserConfig } from 'vite'
 import { visualizer } from 'rollup-plugin-visualizer'
+import path from 'path'
 
 export default defineConfig({
   base: '/',
@@ -34,8 +35,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom', '@mui/material'],
-          chart: ['chart.js', 'react-chartjs-2']
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'mui-vendor': ['@mui/material', '@mui/icons-material', '@mui/x-date-pickers'],
+          'chart-vendor': ['chart.js', 'react-chartjs-2'],
+          'utils-vendor': ['date-fns', 'lodash', 'axios']
         },
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
@@ -45,7 +48,8 @@ export default defineConfig({
           }
           return 'assets/[name]-[hash][extname]'
         }
-      }
+      },
+      chunkSizeWarningLimit: 1600
     }
   },
   optimizeDeps: {
@@ -57,5 +61,11 @@ export default defineConfig({
     hmr: {
       overlay: true
     }
-  }
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  },
+  publicDir: 'public'
 })
