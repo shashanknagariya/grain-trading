@@ -67,6 +67,14 @@ export const Purchases: FC = () => {
     fetchPurchases();
   };
 
+  const handleOpenCreate = () => {
+    setOpenForm(true);
+  };
+
+  const handleCloseCreate = () => {
+    setOpenForm(false);
+  };
+
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -78,7 +86,7 @@ export const Purchases: FC = () => {
             variant="contained"
             color="primary"
             startIcon={<AddIcon />}
-            onClick={() => setOpenForm(true)}
+            onClick={handleOpenCreate}
           >
             {t('purchases.add_purchase')}
           </Button>
@@ -130,7 +138,7 @@ export const Purchases: FC = () => {
 
       <PurchaseForm
         open={openForm}
-        onClose={() => setOpenForm(false)}
+        onClose={handleCloseCreate}
         onSubmit={handlePurchaseCreated}
       />
     </Box>
