@@ -1,10 +1,70 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from models import Sale, Purchase, Inventory, Grain, db
 from sqlalchemy import func
 from datetime import datetime, timedelta
 
 dashboard = Blueprint('dashboard', __name__)
+
+@dashboard.route('/metrics', methods=['GET', 'OPTIONS'])
+@jwt_required(optional=True)
+def get_dashboard_metrics():
+    # Handle OPTIONS request
+    if request.method == 'OPTIONS':
+        return '', 200
+        
+    try:
+        # Get total sales
+        total_sales = db.session.query(
+            func.sum(Sale.total_amount).label('total_amount')
+        ).scalar() or 0
+
+        # Get total purchases
+        total_purchases = db.session.query(
+            func.sum(Purchase.total_amount).label('total_amount')
+        ).scalar() or 0
+
+        # Get total inventory
+        total_inventory = db.session.query(
+            func.sum(Inventory.quantity).label('total_quantity')
+        ).scalar() or 0
+
+        # Get inventory by grain type for chart
+        inventory_by_grain = db.session.query(
+            Grain.name,
+            func.sum(Inventory.quantity).label('quantity')
+        ).join(
+            Inventory, Inventory.grain_id == Grain.id
+        ).group_by(
+            Grain.name
+        ).all()
+
+        chart_data = {
+            'labels': [item[0] for item in inventory_by_grain],
+            'datasets': [{
+                'label': 'Inventory by Grain',
+                'data': [float(item[1]) for item in inventory_by_grain],
+                'backgroundColor': [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF'
+                ]
+            }]
+        }
+
+        return jsonify({
+            'metrics': {
+                'totalSales': float(total_sales),
+                'totalPurchases': float(total_purchases),
+                'inventory': float(total_inventory)
+            },
+            'chartData': chart_data
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @dashboard.route('/dashboard/summary', methods=['GET'])
 @jwt_required()
@@ -61,8 +121,8 @@ def get_dashboard_summary():
                 'amount': purchase.total_amount,
                 'date': purchase.purchase_date.isoformat()
             } for purchase in recent_purchases]
-        })
+        }), 200
 
     except Exception as e:
         print(f"Dashboard Error: {str(e)}")
-        return jsonify({'error': 'Failed to fetch dashboard data'}), 500 
+        return jsonify({'error': 'Failed to fetch dashboard data'}), 500
