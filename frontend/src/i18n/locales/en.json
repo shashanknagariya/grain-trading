@@ -28,12 +28,41 @@
     "users": "Users"
   },
   "dashboard": {
+    "title": "Dashboard",
     "totalSales": "Total Sales",
     "totalPurchases": "Total Purchases",
     "totalInventory": "Total Inventory",
     "inventoryByGrain": "Inventory by Grain",
     "recentTransactions": "Recent Transactions",
-    "monthlySummary": "Monthly Summary"
+    "monthlySummary": "Monthly Summary",
+    "metrics": {
+      "totalRevenue": "Total Revenue",
+      "totalExpenses": "Total Expenses",
+      "netProfit": "Net Profit",
+      "pendingPayments": "Pending Payments",
+      "activeGrains": "Active Grains",
+      "totalGodowns": "Total Godowns"
+    },
+    "chart": {
+      "title": "Monthly Overview",
+      "sales": "Sales",
+      "purchases": "Purchases",
+      "profit": "Profit"
+    }
+  },
+  "inventory": {
+    "title": "Current Inventory",
+    "grain_name": "Grain",
+    "godown_name": "Godown",
+    "total_bags": "Total Bags",
+    "total_weight": "Total Weight",
+    "last_updated": "Last Updated",
+    "empty": "No inventory data found",
+    "actions": {
+      "view": "View Details",
+      "edit": "Edit",
+      "delete": "Delete"
+    }
   },
   "grains": {
     "title": "Grains Management",

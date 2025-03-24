@@ -1,14 +1,29 @@
 import React from 'react';
 import { Card, CardContent, Typography } from '@mui/material';
 import { formatCurrency } from '../utils/formatters';
+import { CardType } from '../types/dashboard';
 
 export interface DashboardCardProps {
   title: string;
   value: number;
-  type: 'sale' | 'purchase' | 'user';
+  type: CardType;
 }
 
 export const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, type }) => {
+  const formatValue = (value: number, type: CardType) => {
+    switch (type) {
+      case 'currency':
+        return formatCurrency(value);
+      case 'number':
+      case 'sale':
+      case 'purchase':
+      case 'user':
+        return value.toLocaleString();
+      default:
+        return value;
+    }
+  };
+
   return (
     <Card>
       <CardContent>
@@ -16,7 +31,7 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, type
           {title}
         </Typography>
         <Typography variant="h4">
-          {type === 'sale' || type === 'purchase' ? formatCurrency(value) : value}
+          {formatValue(value, type)}
         </Typography>
       </CardContent>
     </Card>

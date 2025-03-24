@@ -1,45 +1,42 @@
 import { useState, useEffect } from 'react';
-import { useNotification } from '../contexts/NotificationContext';
+import { DashboardMetrics, DashboardChartData } from '../types/dashboard';
 
-export interface DashboardMetrics {
-  totalSales: number;
-  totalPurchases: number;
-  inventory: number;
+interface DashboardData {
+  metrics: DashboardMetrics;
+  chartData: DashboardChartData;
 }
 
 export const useDashboardData = () => {
-  const { showError } = useNotification();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [chartData, setChartData] = useState<any>(null);
+  const [chartData, setChartData] = useState<DashboardChartData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/dashboard/metrics`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/dashboard`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
+
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch dashboard data');
+          throw new Error('Failed to fetch dashboard data');
         }
-        const data = await response.json();
+
+        const data: DashboardData = await response.json();
         setMetrics(data.metrics);
         setChartData(data.chartData);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        showError(errorMessage);
-        setError(err instanceof Error ? err : new Error(errorMessage));
+        setError(err instanceof Error ? err : new Error('Failed to fetch dashboard data'));
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
-  }, [showError]);
+    fetchDashboardData();
+  }, []);
 
   return { metrics, chartData, isLoading, error };
 };

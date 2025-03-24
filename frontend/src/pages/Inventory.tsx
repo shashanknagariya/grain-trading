@@ -13,6 +13,7 @@ import {
   Alert
 } from '@mui/material';
 import { formatDate, formatWeight } from '../utils/formatters';
+import { useTranslation } from 'react-i18next';
 
 interface InventoryItem {
   id: number;
@@ -24,6 +25,7 @@ interface InventoryItem {
 }
 
 export const Inventory: React.FC = () => {
+  const { t } = useTranslation();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -39,20 +41,20 @@ export const Inventory: React.FC = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch inventory');
+          throw new Error(t('errors.fetch_error'));
         }
 
         const data = await response.json();
         setInventory(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load inventory');
+        setError(err instanceof Error ? err.message : t('errors.fetch_error'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchInventory();
-  }, []);
+  }, [t]);
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
@@ -60,18 +62,18 @@ export const Inventory: React.FC = () => {
   return (
     <Box>
       <Typography variant="h5" gutterBottom>
-        Current Inventory
+        {t('inventory.title')}
       </Typography>
 
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Grain</TableCell>
-              <TableCell>Godown</TableCell>
-              <TableCell align="right">Total Bags</TableCell>
-              <TableCell align="right">Total Weight</TableCell>
-              <TableCell>Last Updated</TableCell>
+              <TableCell>{t('inventory.grain_name')}</TableCell>
+              <TableCell>{t('inventory.godown_name')}</TableCell>
+              <TableCell align="right">{t('inventory.total_bags')}</TableCell>
+              <TableCell align="right">{t('inventory.total_weight')}</TableCell>
+              <TableCell>{t('inventory.last_updated')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -87,7 +89,7 @@ export const Inventory: React.FC = () => {
             {inventory.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} align="center">
-                  No inventory data found
+                  {t('common.noData')}
                 </TableCell>
               </TableRow>
             )}
@@ -96,4 +98,4 @@ export const Inventory: React.FC = () => {
       </TableContainer>
     </Box>
   );
-}; 
+};

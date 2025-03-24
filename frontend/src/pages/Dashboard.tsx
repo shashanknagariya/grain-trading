@@ -4,8 +4,8 @@ import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { DashboardCard } from '../components/DashboardCard';
 import { DashboardChart } from '../components/DashboardChart';
-import { DashboardMetrics } from '../components/DashboardMetrics';
 import { useTranslation } from 'react-i18next';
+import { DashboardMetrics, DashboardChartData } from '../types/dashboard';
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -47,60 +47,78 @@ export const Dashboard: React.FC = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        {t('dashboard.title')}
+      </Typography>
+
       <Grid container spacing={3}>
         {/* Metrics Overview */}
         <Grid item xs={12}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h4" gutterBottom>
-              {t('dashboard.title')}
-            </Typography>
-            <DashboardMetrics metrics={metrics} />
-          </Paper>
-        </Grid>
-
-        {/* Charts */}
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 2, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
-              {t('dashboard.inventory_status')}
+              {t('dashboard.metrics.title')}
             </Typography>
-            <DashboardChart data={chartData} />
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6} md={4}>
+                <DashboardCard
+                  title={t('dashboard.metrics.totalRevenue')}
+                  value={metrics.totalRevenue}
+                  type="currency"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <DashboardCard
+                  title={t('dashboard.metrics.totalExpenses')}
+                  value={metrics.totalExpenses}
+                  type="currency"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <DashboardCard
+                  title={t('dashboard.metrics.netProfit')}
+                  value={metrics.netProfit}
+                  type="currency"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <DashboardCard
+                  title={t('dashboard.metrics.pendingPayments')}
+                  value={metrics.pendingPayments}
+                  type="currency"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <DashboardCard
+                  title={t('dashboard.metrics.activeGrains')}
+                  value={metrics.activeGrains}
+                  type="number"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <DashboardCard
+                  title={t('dashboard.metrics.totalGodowns')}
+                  value={metrics.totalGodowns}
+                  type="number"
+                />
+              </Grid>
+            </Grid>
           </Paper>
         </Grid>
 
-        {/* Recent Activity */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2, height: '100%' }}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                {t('dashboard.recent_sales')}
-              </Typography>
-              <DashboardCard
-                title={t('dashboard.total_sales')}
-                value={metrics.totalSales}
-                type="sale"
-              />
-            </Box>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                {t('dashboard.recent_purchases')}
-              </Typography>
-              <DashboardCard
-                title={t('dashboard.total_purchases')}
-                value={metrics.totalPurchases}
-                type="purchase"
-              />
-            </Box>
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                {t('dashboard.payment_pending')}
-              </Typography>
-              <DashboardCard
-                title={t('dashboard.total_inventory')}
-                value={metrics.inventory}
-                type="sale"
-              />
-            </Box>
+        {/* Monthly Chart */}
+        <Grid item xs={12}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              {t('dashboard.chart.title')}
+            </Typography>
+            <DashboardChart 
+              data={chartData} 
+              labels={{
+                sales: t('dashboard.chart.sales'),
+                purchases: t('dashboard.chart.purchases'),
+                profit: t('dashboard.chart.profit')
+              }}
+            />
           </Paper>
         </Grid>
       </Grid>

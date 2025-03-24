@@ -28,12 +28,27 @@
     "users": "उपयोगकर्ता"
   },
   "dashboard": {
+    "title": "डैशबोर्ड",
     "totalSales": "कुल बिक्री",
     "totalPurchases": "कुल खरीद",
     "totalInventory": "कुल इन्वेंटरी",
     "inventoryByGrain": "अनाज के अनुसार इन्वेंटरी",
     "recentTransactions": "हाल के लेन-देन",
-    "monthlySummary": "मासिक सारांश"
+    "monthlySummary": "मासिक सारांश",
+    "metrics": {
+      "totalRevenue": "कुल राजस्व",
+      "totalExpenses": "कुल खर्च",
+      "netProfit": "शुद्ध लाभ",
+      "pendingPayments": "बकाया भुगतान",
+      "activeGrains": "सक्रिय अनाज",
+      "totalGodowns": "कुल गोदाम"
+    },
+    "chart": {
+      "title": "मासिक अवलोकन",
+      "sales": "बिक्री",
+      "purchases": "खरीद",
+      "profit": "लाभ"
+    }
   },
   "grains": {
     "title": "अनाज प्रबंधन",
@@ -138,6 +153,20 @@
     "po_number": "पीओ नंबर",
     "sale_created": "बिक्री सफलतापूर्वक जोड़ी गई",
     "status_updated": "भुगतान की स्थिति अपडेट की गई"
+  },
+  "inventory": {
+    "title": "वर्तमान इन्वेंटरी",
+    "grain_name": "अनाज",
+    "godown_name": "गोदाम",
+    "total_bags": "कुल बैग",
+    "total_weight": "कुल वजन",
+    "last_updated": "अंतिम अपडेट",
+    "empty": "कोई इन्वेंटरी डेटा नहीं मिला",
+    "actions": {
+      "view": "विवरण देखें",
+      "edit": "संपादित करें",
+      "delete": "हटाएं"
+    }
   },
   "errors": {
     "fetch_error": "डेटा प्राप्त करने में विफल",
