@@ -6,13 +6,9 @@ from datetime import datetime, timedelta
 
 dashboard = Blueprint('dashboard', __name__)
 
-@dashboard.route('/dashboard/metrics', methods=['GET', 'OPTIONS'])
-@jwt_required(optional=True)
+@dashboard.route('/dashboard/metrics', methods=['GET'])
+@jwt_required()
 def get_dashboard_metrics():
-    # Handle OPTIONS request
-    if request.method == 'OPTIONS':
-        return '', 200
-        
     try:
         # Get total sales
         total_sales = db.session.query(
@@ -29,39 +25,73 @@ def get_dashboard_metrics():
             func.sum(Inventory.quantity).label('total_quantity')
         ).scalar() or 0
 
-        # Get inventory by grain type for chart
-        inventory_by_grain = db.session.query(
-            Grain.name,
-            func.sum(Inventory.quantity).label('quantity')
-        ).join(
-            Inventory, Inventory.grain_id == Grain.id
+        # Get active grains count
+        active_grains = db.session.query(func.count(Grain.id)).scalar() or 0
+
+        # Get monthly data for chart
+        now = datetime.now()
+        start_date = now - timedelta(days=180)  # Last 6 months
+
+        monthly_sales = db.session.query(
+            func.strftime('%Y-%m', Sale.created_at).label('month'),
+            func.sum(Sale.total_amount).label('amount')
+        ).filter(
+            Sale.created_at >= start_date
         ).group_by(
-            Grain.name
+            func.strftime('%Y-%m', Sale.created_at)
         ).all()
 
-        chart_data = {
-            'labels': [item[0] for item in inventory_by_grain],
-            'datasets': [{
-                'label': 'Inventory by Grain',
-                'data': [float(item[1]) for item in inventory_by_grain],
-                'backgroundColor': [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF'
-                ]
-            }]
+        monthly_purchases = db.session.query(
+            func.strftime('%Y-%m', Purchase.created_at).label('month'),
+            func.sum(Purchase.total_amount).label('amount')
+        ).filter(
+            Purchase.created_at >= start_date
+        ).group_by(
+            func.strftime('%Y-%m', Purchase.created_at)
+        ).all()
+
+        # Format data for response
+        metrics = {
+            'total_sales': total_sales,
+            'total_purchases': total_purchases,
+            'total_inventory': total_inventory,
+            'active_grains': active_grains
         }
 
+        chart_data = {
+            'labels': [],
+            'datasets': [
+                {
+                    'label': 'Sales',
+                    'data': []
+                },
+                {
+                    'label': 'Purchases',
+                    'data': []
+                }
+            ]
+        }
+
+        # Process monthly data
+        months = set()
+        sales_dict = {sale[0]: sale[1] for sale in monthly_sales}
+        purchases_dict = {purchase[0]: purchase[1] for purchase in monthly_purchases}
+
+        # Get all months
+        months.update([sale[0] for sale in monthly_sales])
+        months.update([purchase[0] for purchase in monthly_purchases])
+        months = sorted(list(months))
+
+        # Fill in chart data
+        chart_data['labels'] = months
+        for month in months:
+            chart_data['datasets'][0]['data'].append(sales_dict.get(month, 0))
+            chart_data['datasets'][1]['data'].append(purchases_dict.get(month, 0))
+
         return jsonify({
-            'metrics': {
-                'totalSales': float(total_sales),
-                'totalPurchases': float(total_purchases),
-                'inventory': float(total_inventory)
-            },
+            'metrics': metrics,
             'chartData': chart_data
-        }), 200
+        })
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
