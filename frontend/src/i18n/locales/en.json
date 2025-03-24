@@ -1,5 +1,6 @@
 {
   "common": {
+    "title": "Grain Trading System",
     "welcome": "Welcome",
     "login": "Login",
     "logout": "Logout",
@@ -13,7 +14,17 @@
     "add": "Add",
     "search": "Search",
     "filter": "Filter",
-    "change_language": "Change Language"
+    "change_language": "Change Language",
+    "actions": "Actions",
+    "print": "Print",
+    "view": "View",
+    "close": "Close",
+    "status": "Status",
+    "date": "Date",
+    "amount": "Amount",
+    "quantity": "Quantity",
+    "details": "Details",
+    "loading": "Loading..."
   },
   "grains": {
     "title": "Grains",
@@ -35,9 +46,46 @@
     "godowns": "Godowns",
     "users": "Users"
   },
+  "sales": {
+    "title": "Sales",
+    "add_sale": "Add Sale",
+    "edit_sale": "Edit Sale",
+    "delete_sale": "Delete Sale",
+    "bill_number": "Bill Number",
+    "customer_name": "Customer Name",
+    "sale_date": "Sale Date",
+    "total_amount": "Total Amount",
+    "payment_status": "Payment Status",
+    "paid": "Paid",
+    "pending": "Pending",
+    "partial": "Partial",
+    "view_details": "View Details",
+    "print_bill": "Print Bill",
+    "sale_details": "Sale Details",
+    "items": "Items",
+    "item_name": "Item Name",
+    "unit_price": "Unit Price",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "payment_mode": "Payment Mode",
+    "remarks": "Remarks",
+    "buyer_gst": "Buyer GST",
+    "number_of_bags": "Number of Bags",
+    "total_weight": "Total Weight (kg)",
+    "rate_per_kg": "Rate per KG",
+    "transportation_mode": "Transportation Mode",
+    "vehicle_number": "Vehicle Number",
+    "driver_name": "Driver Name",
+    "lr_number": "LR Number",
+    "po_number": "PO Number",
+    "sale_created": "Sale created successfully",
+    "status_updated": "Payment status updated"
+  },
   "errors": {
     "required": "This field is required",
     "invalid_input": "Invalid input",
-    "server_error": "Server error occurred"
+    "server_error": "Server error occurred",
+    "fetch_error": "Failed to fetch data",
+    "save_error": "Failed to save data"
   }
 }

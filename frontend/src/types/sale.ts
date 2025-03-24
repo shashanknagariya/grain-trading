@@ -4,6 +4,7 @@ export interface Sale {
   grain_id: number;
   grain_name: string;
   buyer_name: string;
+  customer_name: string;  
   buyer_gst?: string;
   number_of_bags: number;
   total_weight: number;
@@ -16,5 +17,5 @@ export interface Sale {
   po_number?: string;
   sale_date: string;
   created_at: string;
-  payment_status: 'pending' | 'paid';
-} 
+  payment_status: 'pending' | 'paid' | 'partial';
+}

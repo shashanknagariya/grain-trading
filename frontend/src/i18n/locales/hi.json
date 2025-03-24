@@ -1,5 +1,6 @@
 {
   "common": {
+    "title": "अनाज व्यापार प्रणाली",
     "welcome": "स्वागत है",
     "login": "लॉग इन करें",
     "logout": "लॉग आउट",
@@ -13,7 +14,17 @@
     "add": "जोड़ें",
     "search": "खोजें",
     "filter": "फ़िल्टर",
-    "change_language": "भाषा बदलें"
+    "change_language": "भाषा बदलें",
+    "actions": "कार्रवाई",
+    "print": "प्रिंट करें",
+    "view": "देखें",
+    "close": "बंद करें",
+    "status": "स्थिति",
+    "date": "तारीख",
+    "amount": "राशि",
+    "quantity": "मात्रा",
+    "details": "विवरण",
+    "loading": "लोड हो रहा है..."
   },
   "grains": {
     "title": "अनाज",
@@ -35,9 +46,46 @@
     "godowns": "गोदाम",
     "users": "उपयोगकर्ता"
   },
+  "sales": {
+    "title": "बिक्री",
+    "add_sale": "बिक्री जोड़ें",
+    "edit_sale": "बिक्री संपादित करें",
+    "delete_sale": "बिक्री हटाएं",
+    "bill_number": "बिल नंबर",
+    "customer_name": "ग्राहक का नाम",
+    "sale_date": "बिक्री की तारीख",
+    "total_amount": "कुल राशि",
+    "payment_status": "भुगतान की स्थिति",
+    "paid": "भुगतान किया गया",
+    "pending": "लंबित",
+    "partial": "आंशिक",
+    "view_details": "विवरण देखें",
+    "print_bill": "बिल प्रिंट करें",
+    "sale_details": "बिक्री का विवरण",
+    "items": "सामान",
+    "item_name": "सामान का नाम",
+    "unit_price": "इकाई मूल्य",
+    "subtotal": "उप-योग",
+    "total": "कुल",
+    "payment_mode": "भुगतान का तरीका",
+    "remarks": "टिप्पणियां",
+    "buyer_gst": "खरीदार का GST",
+    "number_of_bags": "बोरों की संख्या",
+    "total_weight": "कुल वजन",
+    "rate_per_kg": "प्रति किलो दर",
+    "transportation_mode": "परिवहन का तरीका",
+    "vehicle_number": "वाहन नंबर",
+    "driver_name": "चालक का नाम",
+    "lr_number": "LR नंबर",
+    "po_number": "PO नंबर",
+    "sale_created": "बिक्री सफलतापूर्वक जोड़ी गई",
+    "status_updated": "भुगतान स्थिति अपडेट की गई"
+  },
   "errors": {
     "required": "यह फ़ील्ड आवश्यक है",
     "invalid_input": "अमान्य इनपुट",
-    "server_error": "सर्वर त्रुटि हुई"
+    "server_error": "सर्वर त्रुटि हुई",
+    "fetch_error": "डेटा प्राप्त करने में विफल",
+    "save_error": "डेटा सहेजने में विफल"
   }
 }

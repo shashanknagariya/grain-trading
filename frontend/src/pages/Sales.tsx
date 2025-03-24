@@ -23,12 +23,14 @@ import { SaleDetails } from '../components/SaleDetails';
 import { SaleBillPrint } from '../components/SaleBillPrint';
 import { useReactToPrint } from 'react-to-print';
 import { Sale } from '../types/sale';
+import { useTranslation } from 'react-i18next';
 
 export const Sales: React.FC = () => {
+  const { t } = useTranslation();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [openForm, setOpenForm] = useState(false);
-  const { showError, showSuccess } = useNotification();
+  const { showError } = useNotification();
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const printComponentRef = useRef<HTMLDivElement>(null);
@@ -37,53 +39,11 @@ export const Sales: React.FC = () => {
 
   const handlePrint = useReactToPrint({
     content: () => printComponentRef.current,
-    documentTitle: `Sale-${selectedSale?.bill_number || 'Bill'}`,
+    documentTitle: `${t('sales.title')}-${selectedSale?.bill_number || t('sales.bill')}`,
     onAfterPrint: () => console.log('Printed successfully')
   });
 
-  const fetchSales = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch sales');
-      const data = await response.json();
-      setSales(data);
-    } catch (error) {
-      showError('Failed to load sales');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSales();
-  }, []);
-
-  const handleCreateSuccess = () => {
-    fetchSales();
-    setOpenForm(false);
-  };
-
-  const handleRowClick = async (saleId: number) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales/${saleId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch sale details');
-      const data = await response.json();
-      setSelectedSale(data);
-      setDetailsOpen(true);
-    } catch (error) {
-      showError('Failed to load sale details');
-    }
-  };
-
-  const handlePaymentStatusChange = async (saleId: number, newStatus: 'pending' | 'paid') => {
+  const handlePaymentStatusChange = async (saleId: number, newStatus: 'pending' | 'paid' | 'partial') => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales/${saleId}/payment-status`, {
         method: 'PUT',
@@ -94,112 +54,150 @@ export const Sales: React.FC = () => {
         body: JSON.stringify({ status: newStatus })
       });
 
-      if (!response.ok) throw new Error('Failed to update payment status');
+      if (!response.ok) throw new Error(t('errors.save_error'));
       
-      // Update the local state immediately
       setSales(sales.map(sale => 
         sale.id === saleId 
           ? { ...sale, payment_status: newStatus }
           : sale
       ));
 
-      // If this is the currently selected sale, update that too
       if (selectedSale && selectedSale.id === saleId) {
         setSelectedSale({ ...selectedSale, payment_status: newStatus });
       }
       
-      showSuccess('Payment status updated successfully');
+      showError(t('sales.status_updated'));
     } catch (error) {
-      showError('Failed to update payment status');
+      showError(t('errors.save_error'));
     }
   };
 
-  const handleStatusMenuClick = (event: React.MouseEvent<HTMLElement>, saleId: number) => {
-    event.stopPropagation();
+  const fetchSales = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) throw new Error(t('errors.fetch_error'));
+      const data = await response.json();
+      setSales(data);
+      setLoading(false);
+    } catch (error) {
+      showError(t('errors.fetch_error'));
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSales();
+  }, []);
+
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, saleId: number) => {
     setAnchorEl(event.currentTarget);
     setSelectedSaleId(saleId);
   };
 
-  const handleStatusMenuClose = () => {
+  const handleCloseMenu = () => {
     setAnchorEl(null);
     setSelectedSaleId(null);
   };
 
-  const handleStatusChange = async (newStatus: 'pending' | 'paid') => {
-    if (selectedSaleId) {
-      await handlePaymentStatusChange(selectedSaleId, newStatus);
-      handleStatusMenuClose();
+  const handleViewDetails = (sale: Sale) => {
+    setSelectedSale(sale);
+    setDetailsOpen(true);
+    handleCloseMenu();
+  };
+
+  const handlePrintBill = (sale: Sale) => {
+    setSelectedSale(sale);
+    setTimeout(() => {
+      handlePrint();
+    }, 100);
+    handleCloseMenu();
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'paid':
+        return 'success';
+      case 'pending':
+        return 'error';
+      case 'partial':
+        return 'warning';
+      default:
+        return 'default';
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'paid':
+        return t('sales.paid');
+      case 'pending':
+        return t('sales.pending');
+      case 'partial':
+        return t('sales.partial');
+      default:
+        return status;
+    }
+  };
+
+  if (loading) {
+    return <Typography>{t('common.loading')}</Typography>;
+  }
+
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5">Sales</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h5" component="h1">
+          {t('sales.title')}
+        </Typography>
         <Button
           variant="contained"
-          color="primary"
           startIcon={<AddIcon />}
           onClick={() => setOpenForm(true)}
         >
-          New Sale
+          {t('sales.add_sale')}
         </Button>
       </Box>
-
-      <SalesForm
-        open={openForm}
-        onClose={() => setOpenForm(false)}
-        onSubmit={handleCreateSuccess}
-      />
 
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Bill Number</TableCell>
-              <TableCell>Grain</TableCell>
-              <TableCell>Buyer</TableCell>
-              <TableCell align="right">Amount</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Payment Status</TableCell>
+              <TableCell>{t('sales.bill_number')}</TableCell>
+              <TableCell>{t('sales.customer_name')}</TableCell>
+              <TableCell>{t('sales.sale_date')}</TableCell>
+              <TableCell>{t('sales.total_amount')}</TableCell>
+              <TableCell>{t('sales.payment_status')}</TableCell>
+              <TableCell>{t('common.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {sales.map((sale) => (
-              <TableRow 
-                key={sale.id} 
-                onClick={() => handleRowClick(sale.id)}
-                sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
-              >
+              <TableRow key={sale.id}>
                 <TableCell>{sale.bill_number}</TableCell>
-                <TableCell>{sale.grain_name}</TableCell>
-                <TableCell>{sale.buyer_name}</TableCell>
-                <TableCell align="right">{formatCurrency(sale.total_amount)}</TableCell>
+                <TableCell>{sale.customer_name || sale.buyer_name}</TableCell>
                 <TableCell>{formatDate(new Date(sale.sale_date))}</TableCell>
+                <TableCell>{formatCurrency(sale.total_amount)}</TableCell>
                 <TableCell>
-                  <Box display="flex" alignItems="center">
-                    <Chip
-                      label={sale.payment_status === 'paid' ? 'Paid' : 'Pending'}
-                      color={sale.payment_status === 'paid' ? 'success' : 'error'}
-                      size="small"
-                    />
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleStatusMenuClick(e, sale.id)}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                  </Box>
+                  <Chip
+                    label={getStatusLabel(sale.payment_status)}
+                    color={getStatusColor(sale.payment_status)}
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell>
+                  <IconButton
+                    onClick={(e) => handleOpenMenu(e, sale.id)}
+                    size="small"
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
                 </TableCell>
               </TableRow>
             ))}
-            {sales.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={8} align="center">
-                  No sales found
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -207,39 +205,50 @@ export const Sales: React.FC = () => {
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onClose={handleStatusMenuClose}
+        onClose={handleCloseMenu}
       >
-        <MenuItem onClick={() => handleStatusChange('pending')}>
-          <Chip 
-            label="Pending" 
-            color="error" 
-            size="small" 
-            sx={{ minWidth: 80 }}
-          />
+        <MenuItem
+          onClick={() => {
+            const sale = sales.find(s => s.id === selectedSaleId);
+            if (sale) handleViewDetails(sale);
+          }}
+        >
+          {t('sales.view_details')}
         </MenuItem>
-        <MenuItem onClick={() => handleStatusChange('paid')}>
-          <Chip 
-            label="Paid" 
-            color="success" 
-            size="small"
-            sx={{ minWidth: 80 }}
-          />
+        <MenuItem
+          onClick={() => {
+            const sale = sales.find(s => s.id === selectedSaleId);
+            if (sale) handlePrintBill(sale);
+          }}
+        >
+          {t('sales.print_bill')}
         </MenuItem>
       </Menu>
+
+      <SalesForm
+        open={openForm}
+        onClose={() => setOpenForm(false)}
+        onSubmit={() => {
+          setOpenForm(false);
+          fetchSales();
+        }}
+      />
 
       <SaleDetails
         open={detailsOpen}
         onClose={() => setDetailsOpen(false)}
         sale={selectedSale}
         onPrint={handlePrint}
-        handlePaymentStatusChange={handlePaymentStatusChange} 
+        handlePaymentStatusChange={handlePaymentStatusChange}
       />
 
       <div style={{ display: 'none' }}>
-        <div ref={printComponentRef}>
-          <SaleBillPrint sale={selectedSale} />
-        </div>
+        {selectedSale && (
+          <div ref={printComponentRef}>
+            <SaleBillPrint sale={selectedSale} />
+          </div>
+        )}
       </div>
     </Box>
   );
-}; 
+};
