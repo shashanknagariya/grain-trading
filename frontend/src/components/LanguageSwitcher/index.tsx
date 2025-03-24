@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   IconButton, 
   Menu, 
@@ -17,7 +17,7 @@ const LANGUAGES = [
 ];
 
 export const LanguageSwitcher = () => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -28,27 +28,42 @@ export const LanguageSwitcher = () => {
     setAnchorEl(null);
   };
 
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
-    handleClose();
+  const changeLanguage = async (lng: string) => {
+    try {
+      await i18n.changeLanguage(lng);
+      localStorage.setItem('language', lng);
+      handleClose();
+    } catch (error) {
+      console.error('Error changing language:', error);
+    }
   };
 
-  const currentLanguage = LANGUAGES.find(lang => lang.code === i18n.language);
+  const currentLanguage = LANGUAGES.find(lang => lang.code === i18n.language) || LANGUAGES[0];
+
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem('language');
+    if (storedLanguage) {
+      i18n.changeLanguage(storedLanguage);
+    }
+  }, [i18n]);
 
   return (
     <>
       <IconButton
         color="inherit"
         onClick={handleClick}
-        aria-label="change language"
+        aria-label={t('common.change_language')}
+        aria-controls="language-menu"
+        aria-haspopup="true"
         sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
       >
         <TranslateIcon />
         <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
-          {currentLanguage?.label}
+          {currentLanguage.label}
         </Typography>
       </IconButton>
       <Menu
+        id="language-menu"
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}

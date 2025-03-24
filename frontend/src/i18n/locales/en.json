@@ -12,7 +12,8 @@
     "edit": "Edit",
     "add": "Add",
     "search": "Search",
-    "filter": "Filter"
+    "filter": "Filter",
+    "change_language": "Change Language"
   },
   "grains": {
     "title": "Grains",
@@ -24,6 +25,15 @@
     "quantity": "Quantity",
     "price": "Price",
     "date": "Date"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "purchases": "Purchases",
+    "sales": "Sales",
+    "inventory": "Inventory",
+    "grains": "Grains",
+    "godowns": "Godowns",
+    "users": "Users"
   },
   "errors": {
     "required": "This field is required",

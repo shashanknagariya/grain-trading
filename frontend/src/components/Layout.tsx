@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { PermissionGuard } from './PermissionGuard';
 import { Permissions } from '../constants/permissions';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import {
   Dashboard as DashboardIcon,
   ShoppingCart as PurchaseIcon,
@@ -46,16 +47,14 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Typography variant="h6">Grain Trading System</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <LanguageSwitcher />
             <Typography variant="body1">
               {user?.username}
             </Typography>
-            <Button color="inherit" onClick={handleLogout}>
-              Logout
-            </Button>
+            <Button color="inherit" onClick={handleLogout}>Logout</Button>
           </Box>
         </Toolbar>
       </AppBar>
-      
       <Drawer
         variant="permanent"
         sx={{
@@ -68,25 +67,26 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
         }}
       >
         <Toolbar />
-        <List>
-          {menuItems.map((item) => (
-            item.permission ? (
-              <PermissionGuard key={item.text} permission={item.permission}>
-                <ListItem button component={Link} to={item.path}>
+        <Box sx={{ overflow: 'auto' }}>
+          <List>
+            {menuItems.map((item) => (
+              item.permission ? (
+                <PermissionGuard key={item.text} permission={item.permission}>
+                  <ListItem button component={Link} to={item.path}>
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.text} />
+                  </ListItem>
+                </PermissionGuard>
+              ) : (
+                <ListItem button key={item.text} component={Link} to={item.path}>
                   <ListItemIcon>{item.icon}</ListItemIcon>
                   <ListItemText primary={item.text} />
                 </ListItem>
-              </PermissionGuard>
-            ) : (
-              <ListItem button key={item.text} component={Link} to={item.path}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItem>
-            )
-          ))}
-        </List>
+              )
+            ))}
+          </List>
+        </Box>
       </Drawer>
-      
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
         {children}

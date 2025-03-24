@@ -12,7 +12,8 @@
     "edit": "संपादित करें",
     "add": "जोड़ें",
     "search": "खोजें",
-    "filter": "फ़िल्टर"
+    "filter": "फ़िल्टर",
+    "change_language": "भाषा बदलें"
   },
   "grains": {
     "title": "अनाज",
@@ -24,6 +25,15 @@
     "quantity": "मात्रा",
     "price": "कीमत",
     "date": "तारीख"
+  },
+  "navigation": {
+    "dashboard": "डैशबोर्ड",
+    "purchases": "खरीद",
+    "sales": "बिक्री",
+    "inventory": "इन्वेंटरी",
+    "grains": "अनाज",
+    "godowns": "गोदाम",
+    "users": "उपयोगकर्ता"
   },
   "errors": {
     "required": "यह फ़ील्ड आवश्यक है",
