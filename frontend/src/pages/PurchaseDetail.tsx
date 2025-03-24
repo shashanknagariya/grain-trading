@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -11,6 +11,8 @@ import {
 } from '@mui/material';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { useNotification } from '../contexts/NotificationContext';
+import { useReactToPrint } from 'react-to-print';
+import PrintIcon from '@mui/icons-material/Print';
 
 interface PurchaseDetail {
   id: string;
@@ -24,6 +26,7 @@ interface PurchaseDetail {
   purchase_date: Date;
   godown_name: string;
   status: 'pending' | 'completed' | 'cancelled';
+  bill_number: string;
 }
 
 export const PurchaseDetailPage: React.FC = () => {
@@ -33,6 +36,7 @@ export const PurchaseDetailPage: React.FC = () => {
   const [purchase, setPurchase] = useState<PurchaseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchPurchaseDetail();
@@ -65,6 +69,11 @@ export const PurchaseDetailPage: React.FC = () => {
     }
   };
 
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: `Purchase-${purchase?.bill_number}`,
+  });
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
@@ -84,69 +93,84 @@ export const PurchaseDetailPage: React.FC = () => {
   return (
     <Box p={3}>
       <Paper sx={{ p: 3 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Typography variant="h5" gutterBottom>
-              Purchase Details
-            </Typography>
-          </Grid>
-          
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Grain</Typography>
-            <Typography>{purchase.grain_name}</Typography>
-          </Grid>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Typography variant="h4" component="h1">
+            Purchase Details
+          </Typography>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<PrintIcon />}
+            onClick={handlePrint}
+          >
+            Print
+          </Button>
+        </Box>
+        <div ref={printRef}>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Typography variant="h5" gutterBottom>
+                Purchase Details
+              </Typography>
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Grain</Typography>
+              <Typography>{purchase.grain_name}</Typography>
+            </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Seller</Typography>
-            <Typography>{purchase.seller_name}</Typography>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Seller</Typography>
+              <Typography>{purchase.seller_name}</Typography>
+            </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Number of Bags</Typography>
-            <Typography>{purchase.number_of_bags}</Typography>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Number of Bags</Typography>
+              <Typography>{purchase.number_of_bags}</Typography>
+            </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Weight per Bag</Typography>
-            <Typography>{purchase.weight_per_bag} kg</Typography>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Weight per Bag</Typography>
+              <Typography>{purchase.weight_per_bag} kg</Typography>
+            </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Total Weight</Typography>
-            <Typography>{purchase.total_weight} kg</Typography>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Total Weight</Typography>
+              <Typography>{purchase.total_weight} kg</Typography>
+            </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Rate per KG</Typography>
-            <Typography>{formatCurrency(purchase.rate_per_kg)}</Typography>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Rate per KG</Typography>
+              <Typography>{formatCurrency(purchase.rate_per_kg)}</Typography>
+            </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Total Amount</Typography>
-            <Typography>{formatCurrency(purchase.total_amount)}</Typography>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Total Amount</Typography>
+              <Typography>{formatCurrency(purchase.total_amount)}</Typography>
+            </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Purchase Date</Typography>
-            <Typography>{formatDate(purchase.purchase_date)}</Typography>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Purchase Date</Typography>
+              <Typography>{formatDate(purchase.purchase_date)}</Typography>
+            </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Godown</Typography>
-            <Typography>{purchase.godown_name}</Typography>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Godown</Typography>
+              <Typography>{purchase.godown_name}</Typography>
+            </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Status</Typography>
-            <Typography sx={{ textTransform: 'capitalize' }}>{purchase.status}</Typography>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Status</Typography>
+              <Typography sx={{ textTransform: 'capitalize' }}>{purchase.status}</Typography>
+            </Grid>
 
-          <Grid item xs={12}>
-            <Button onClick={() => navigate('/purchases')}>
-              Back to Purchases
-            </Button>
+            <Grid item xs={12}>
+              <Button onClick={() => navigate('/purchases')}>
+                Back to Purchases
+              </Button>
+            </Grid>
           </Grid>
-        </Grid>
+        </div>
       </Paper>
     </Box>
   );
