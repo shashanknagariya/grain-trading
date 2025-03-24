@@ -81,16 +81,14 @@ export const Purchases: FC = () => {
         <Typography variant="h4" component="h1">
           {t('purchases.title')}
         </Typography>
-        <PermissionGuard permission={Permissions.CREATE_PURCHASE}>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={handleOpenCreate}
-          >
-            {t('purchases.add_purchase')}
-          </Button>
-        </PermissionGuard>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleOpenCreate}
+        >
+          {t('purchases.add_purchase')}
+        </Button>
       </Box>
 
       <TableContainer component={Paper}>
