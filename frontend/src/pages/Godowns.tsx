@@ -13,26 +13,29 @@ import {
   Typography,
   IconButton,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon
-} from '@mui/icons-material';
-import { godownService, type Godown, type CreateGodownData } from '../services/godownService';
-import { PermissionGuard } from '../components/PermissionGuard';
-import { Permissions } from '../constants/permissions';
-import { GodownFormDialog } from '../components/GodownFormDialog';
-import { DeleteConfirmationDialog } from '../components/DeleteConfirmationDialog';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { godownService, type Godown } from '../services/godownService';
+import { useTranslation } from 'react-i18next';
 
 export const Godowns: FC = () => {
+  const { t } = useTranslation();
   const [godowns, setGodowns] = useState<Godown[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [openCreateDialog, setOpenCreateDialog] = useState(false);
-  const [godownToEdit, setGodownToEdit] = useState<Godown | null>(null);
-  const [godownToDelete, setGodownToDelete] = useState<Godown | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedGodown, setSelectedGodown] = useState<Godown | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    location: '',
+    capacity: ''
+  });
 
   const loadGodowns = async () => {
     try {
@@ -40,7 +43,7 @@ export const Godowns: FC = () => {
       setGodowns(data);
       setError('');
     } catch (err) {
-      setError('Failed to load godowns');
+      setError(t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -50,34 +53,63 @@ export const Godowns: FC = () => {
     loadGodowns();
   }, []);
 
-  const handleCreate = async (data: CreateGodownData) => {
+  const handleOpenDialog = (godown?: Godown) => {
+    if (godown) {
+      setSelectedGodown(godown);
+      setFormData({
+        name: godown.name,
+        location: godown.location,
+        capacity: godown.capacity.toString()
+      });
+    } else {
+      setSelectedGodown(null);
+      setFormData({
+        name: '',
+        location: '',
+        capacity: ''
+      });
+    }
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedGodown(null);
+    setFormData({
+      name: '',
+      location: '',
+      capacity: ''
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      await godownService.create(data);
+      const godownData = {
+        ...formData,
+        capacity: parseInt(formData.capacity, 10)
+      };
+
+      if (selectedGodown) {
+        await godownService.update(selectedGodown.id, godownData);
+      } else {
+        await godownService.create(godownData);
+      }
+      handleCloseDialog();
       loadGodowns();
     } catch (err) {
-      throw err;
+      setError(t('common.error'));
     }
   };
 
-  const handleEdit = async (data: Partial<CreateGodownData>) => {
-    if (!godownToEdit) return;
-    try {
-      await godownService.update(godownToEdit.id, data);
-      loadGodowns();
-      setGodownToEdit(null);
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!godownToDelete) return;
-    try {
-      await godownService.delete(godownToDelete.id);
-      loadGodowns();
-      setGodownToDelete(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete godown');
+  const handleDelete = async (id: number) => {
+    if (window.confirm(t('godowns.confirmDelete'))) {
+      try {
+        await godownService.delete(id);
+        loadGodowns();
+      } catch (err) {
+        setError(t('common.error'));
+      }
     }
   };
 
@@ -90,80 +122,99 @@ export const Godowns: FC = () => {
   }
 
   return (
-    <PermissionGuard 
-      permission={Permissions.MANAGE_INVENTORY}
-      fallback={<Typography>You don't have permission to view this page.</Typography>}
-    >
-      <Box>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h5">Godown Management</Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenCreateDialog(true)}
-          >
-            Add Godown
-          </Button>
-        </Box>
+    <Box p={3}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h5">{t('godowns.title')}</Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => handleOpenDialog()}
+        >
+          {t('godowns.addGodown')}
+        </Button>
+      </Box>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>{t('godowns.godownName')}</TableCell>
+              <TableCell>{t('godowns.location')}</TableCell>
+              <TableCell>{t('godowns.capacity')}</TableCell>
+              <TableCell align="right">{t('common.actions')}</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {godowns.length === 0 ? (
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Location</TableCell>
-                <TableCell>Capacity (Bags)</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell colSpan={4} align="center">
+                  {t('common.noData')}
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {godowns.map((godown) => (
+            ) : (
+              godowns.map((godown) => (
                 <TableRow key={godown.id}>
                   <TableCell>{godown.name}</TableCell>
                   <TableCell>{godown.location}</TableCell>
                   <TableCell>{godown.capacity}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <IconButton onClick={() => setGodownToEdit(godown)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton onClick={() => setGodownToDelete(godown)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
+                  <TableCell align="right">
+                    <IconButton onClick={() => handleOpenDialog(godown)} size="small">
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(godown.id)} size="small" color="error">
+                      <DeleteIcon />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        <GodownFormDialog
-          open={openCreateDialog}
-          onClose={() => setOpenCreateDialog(false)}
-          onSubmit={handleCreate}
-          mode="create"
-        />
-
-        <GodownFormDialog
-          open={!!godownToEdit}
-          onClose={() => setGodownToEdit(null)}
-          onSubmit={handleEdit}
-          mode="edit"
-          initialData={godownToEdit || undefined}
-        />
-
-        <DeleteConfirmationDialog
-          open={!!godownToDelete}
-          onClose={() => setGodownToDelete(null)}
-          onConfirm={handleDelete}
-          title="Delete Godown"
-          content={`Are you sure you want to delete godown ${godownToDelete?.name}? This action cannot be undone.`}
-        />
-      </Box>
-    </PermissionGuard>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <form onSubmit={handleSubmit}>
+          <DialogTitle>
+            {selectedGodown ? t('godowns.editGodown') : t('godowns.addGodown')}
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label={t('godowns.godownName')}
+              fullWidth
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+            <TextField
+              margin="dense"
+              label={t('godowns.location')}
+              fullWidth
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              required
+            />
+            <TextField
+              margin="dense"
+              label={t('godowns.capacity')}
+              fullWidth
+              type="number"
+              value={formData.capacity}
+              onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+              required
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog}>{t('common.cancel')}</Button>
+            <Button type="submit" variant="contained" color="primary">
+              {t('common.save')}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+    </Box>
   );
-}; 
+};

@@ -25,21 +25,66 @@
     "amount": "Amount",
     "quantity": "Quantity",
     "details": "Details",
-    "change_language": "Change Language"
+    "change_language": "Change Language",
+    "register": "Register",
+    "submit": "Submit",
+    "noData": "No data available",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm"
   },
   "grains": {
-    "title": "Grains",
-    "add_grain": "Add Grain",
+    "title": "Grains Management",
+    "add_grain": "Add New Grain",
     "edit_grain": "Edit Grain",
     "delete_grain": "Delete Grain",
-    "name": "Name",
+    "name": "Grain Name",
     "type": "Type",
     "quantity": "Quantity",
     "price": "Price",
     "date": "Date",
     "grain_created": "Grain created successfully",
     "grain_updated": "Grain updated successfully",
-    "grain_deleted": "Grain deleted successfully"
+    "grain_deleted": "Grain deleted successfully",
+    "confirmDelete": "Are you sure you want to delete this grain?",
+    "addSuccess": "Grain added successfully",
+    "editSuccess": "Grain updated successfully",
+    "deleteSuccess": "Grain deleted successfully"
+  },
+  "godowns": {
+    "title": "Godowns Management",
+    "add_godown": "Add New Godown",
+    "edit_godown": "Edit Godown",
+    "delete_godown": "Delete Godown",
+    "godown_name": "Godown Name",
+    "location": "Location",
+    "capacity": "Capacity (in kg)",
+    "current_stock": "Current Stock",
+    "confirmDelete": "Are you sure you want to delete this godown?",
+    "addSuccess": "Godown added successfully",
+    "editSuccess": "Godown updated successfully",
+    "deleteSuccess": "Godown deleted successfully"
+  },
+  "users": {
+    "title": "Users Management",
+    "add_user": "Add New User",
+    "edit_user": "Edit User",
+    "delete_user": "Delete User",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "role": "Role",
+    "status": "Status",
+    "last_login": "Last Login",
+    "confirmDelete": "Are you sure you want to delete this user?",
+    "addSuccess": "User added successfully",
+    "editSuccess": "User updated successfully",
+    "deleteSuccess": "User deleted successfully",
+    "roles": {
+      "admin": "Admin",
+      "manager": "Manager",
+      "staff": "Staff"
+    }
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -49,6 +94,22 @@
     "grains": "Grains",
     "godowns": "Godowns",
     "users": "Users"
+  },
+  "dashboard": {
+    "title": "Dashboard Overview",
+    "inventory_status": "Inventory Status",
+    "recent_sales": "Recent Sales",
+    "recent_purchases": "Recent Purchases",
+    "payment_pending": "Payment Pending",
+    "total_sales": "Total Sales",
+    "total_purchases": "Total Purchases",
+    "total_inventory": "Total Inventory",
+    "totalSales": "Total Sales",
+    "totalPurchases": "Total Purchases",
+    "totalInventory": "Total Inventory",
+    "inventoryByGrain": "Inventory by Grain",
+    "recentTransactions": "Recent Transactions",
+    "monthlySummary": "Monthly Summary"
   },
   "sales": {
     "title": "Sales",
@@ -127,16 +188,6 @@
     "inventory_details": "Inventory Details",
     "inventory_created": "Inventory created successfully",
     "inventory_updated": "Inventory updated successfully"
-  },
-  "dashboard": {
-    "title": "Dashboard Overview",
-    "inventory_status": "Inventory Status",
-    "recent_sales": "Recent Sales",
-    "recent_purchases": "Recent Purchases",
-    "payment_pending": "Payment Pending",
-    "total_sales": "Total Sales",
-    "total_purchases": "Total Purchases",
-    "total_inventory": "Total Inventory"
   },
   "errors": {
     "required": "This field is required",

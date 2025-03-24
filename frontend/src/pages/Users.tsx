@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { FC } from 'react';
 import {
   Box,
+  Button,
   Paper,
   Table,
   TableBody,
@@ -10,100 +11,58 @@ import {
   TableHead,
   TableRow,
   Typography,
-  CircularProgress,
+  IconButton,
   Alert,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
   Select,
   MenuItem,
   FormControl,
-  Button,
-  IconButton
+  InputLabel
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon
-} from '@mui/icons-material';
-import { userService } from '../services/userService';
+import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+import { userService, type User } from '../services/userService';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
 import { Permissions } from '../constants/permissions';
 import { PermissionGuard } from '../components/PermissionGuard';
-import { useAuth } from '../contexts/AuthContext';
-import { UserFormDialog } from '../components/UserFormDialog';
-import { DeleteConfirmationDialog } from '../components/DeleteConfirmationDialog';
 import { useNotification } from '../contexts/NotificationContext';
-import { formatDate } from '../utils/formatters';
 
-// Define the types that were previously imported
-interface CreateUserData {
-  username: string;
-  email: string;
-  password: string;
-  role: string;
-  permissions: string[];
-}
-
-interface UpdateUserData {
-  email?: string;
-  role?: string;
-  permissions?: string[];
-}
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  role: string;
-  createdAt: Date;
-  lastLogin: Date;
-  permissions: string[];  // Make this required
-}
-
-// Use User interface instead of LocalUser
-type LocalUser = User;  // Now they're the same type
-
-// Rename to avoid conflict with imported constant
 const USER_ROLES = {
   ADMIN: 'ADMIN',
   MANAGER: 'MANAGER',
-  USER: 'USER'
+  STAFF: 'STAFF'
 } as const;
 
 type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
 
 export const Users: FC = () => {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
-  const [users, setUsers] = useState<LocalUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [openCreateDialog, setOpenCreateDialog] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<LocalUser | null>(null);
-  const [userToEdit, setUserToEdit] = useState<User | undefined>(undefined);
   const { showError, showSuccess } = useNotification();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: USER_ROLES.STAFF as UserRole
+  });
 
   const loadUsers = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
-
-      const data = await response.json();
-      // Convert string dates to Date objects
-      const formattedUsers = data.map((user: any) => ({
-        ...user,
-        createdAt: new Date(user.createdAt),
-        lastLogin: new Date(user.lastLogin)
-      }));
-      setUsers(formattedUsers);
+      const data = await userService.getAll();
+      setUsers(data);
+      setError('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      showError('Failed to load users');
+      setError(t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -113,62 +72,76 @@ export const Users: FC = () => {
     loadUsers();
   }, []);
 
+  const handleOpenDialog = (user?: User) => {
+    if (user) {
+      setSelectedUser(user);
+      setFormData({
+        username: user.username,
+        email: user.email,
+        password: '',
+        role: user.role as UserRole
+      });
+    } else {
+      setSelectedUser(null);
+      setFormData({
+        username: '',
+        email: '',
+        password: '',
+        role: USER_ROLES.STAFF
+      });
+    }
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedUser(null);
+    setFormData({
+      username: '',
+      email: '',
+      password: '',
+      role: USER_ROLES.STAFF
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (selectedUser) {
+        await userService.update(selectedUser.id, {
+          email: formData.email,
+          role: formData.role
+        });
+      } else {
+        await userService.create(formData);
+      }
+      handleCloseDialog();
+      loadUsers();
+      showSuccess(t('users.success'));
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm(t('users.confirmDelete'))) {
+      try {
+        await userService.delete(id);
+        loadUsers();
+        showSuccess(t('users.success'));
+      } catch (err) {
+        setError(t('common.error'));
+      }
+    }
+  };
+
   const handleRoleChange = async (userId: number, newRole: UserRole) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${userId}/role`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ role: newRole })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update role');
-      }
-
-      await loadUsers();
-      showSuccess('Role updated successfully');
-    } catch (err) {
-      showError('Failed to update user role');
-    }
-  };
-
-  const handleCreateUser = async (userData: CreateUserData | UpdateUserData) => {
-    if ('username' in userData) {  // Type guard to check if it's CreateUserData
-      try {
-        await userService.create(userData);
-        loadUsers();
-        showSuccess('User created successfully');
-      } catch (err) {
-        throw err;
-      }
-    }
-  };
-
-  const handleEditUser = async (userData: UpdateUserData) => {
-    if (!userToEdit) return;
-    try {
-      await userService.update(userToEdit.id, userData);
+      await userService.updateRole(userId, newRole);
       loadUsers();
-      setUserToEdit(undefined);
-      showSuccess('User updated successfully');
+      showSuccess(t('users.success'));
     } catch (err) {
-      throw err;
-    }
-  };
-
-  const handleDeleteUser = async () => {
-    if (!userToDelete) return;
-    
-    try {
-      await userService.delete(userToDelete.id);
-      loadUsers();
-      setUserToDelete(null);
-      showSuccess('User deleted successfully');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete user');
+      showError(t('common.error'));
     }
   };
 
@@ -180,117 +153,150 @@ export const Users: FC = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ m: 2 }}>
-        {error}
-      </Alert>
-    );
-  }
-
   return (
     <PermissionGuard 
       permission={Permissions.MANAGE_USERS}
-      fallback={<Typography>You don't have permission to view this page.</Typography>}
+      fallback={<Typography>{t('common.noPermission')}</Typography>}
     >
-      <Box>
+      <Box p={3}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h5">User Management</Typography>
+          <Typography variant="h5">{t('users.title')}</Typography>
           <Button
             variant="contained"
             color="primary"
             startIcon={<AddIcon />}
-            onClick={() => setOpenCreateDialog(true)}
+            onClick={() => handleOpenDialog()}
           >
-            Create User
+            {t('users.addUser')}
           </Button>
         </Box>
+
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Username</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Created</TableCell>
-                <TableCell>Last Login</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>{t('users.username')}</TableCell>
+                <TableCell>{t('users.email')}</TableCell>
+                <TableCell>{t('users.role')}</TableCell>
+                <TableCell align="right">{t('common.actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <FormControl fullWidth>
-                      <Select
-                        value={user.role}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
-                        size="small"
-                        disabled={user.id === currentUser?.id}
-                      >
-                        {Object.values(USER_ROLES).map((role) => (
-                          <MenuItem key={role} value={role}>
-                            {role}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+              {users.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} align="center">
+                    {t('common.noData')}
                   </TableCell>
-                  <TableCell>{formatDate(user.createdAt)}</TableCell>
-                  <TableCell>{formatDate(user.lastLogin)}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <IconButton
-                        onClick={() => setUserToEdit(user)}
+                </TableRow>
+              ) : (
+                users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <FormControl fullWidth>
+                        <Select
+                          value={user.role}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
+                          size="small"
+                          disabled={user.id === currentUser?.id}
+                        >
+                          {Object.values(USER_ROLES).map((role) => (
+                            <MenuItem key={role} value={role}>
+                              {role}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="right">
+                      <IconButton 
+                        onClick={() => handleOpenDialog(user)} 
+                        size="small"
                         disabled={user.id === currentUser?.id}
                       >
                         <EditIcon />
                       </IconButton>
-                      <IconButton
-                        onClick={() => setUserToDelete(user)}
+                      <IconButton 
+                        onClick={() => handleDelete(user.id)} 
+                        size="small" 
+                        color="error"
                         disabled={user.id === currentUser?.id}
                       >
                         <DeleteIcon />
                       </IconButton>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
 
-        <UserFormDialog
-          open={openCreateDialog}
-          onClose={() => setOpenCreateDialog(false)}
-          onSubmit={(data) => {
-            if (data && 'username' in data) {
-              return handleCreateUser(data as CreateUserData);
-            }
-            return Promise.reject('Invalid data for create mode');
-          }}
-          mode="create"
-        />
-
-        <UserFormDialog
-          open={!!userToEdit}
-          onClose={() => setUserToEdit(undefined)}
-          onSubmit={handleEditUser}
-          mode="edit"
-          initialData={userToEdit}
-        />
-
-        <DeleteConfirmationDialog
-          open={!!userToDelete}
-          onClose={() => setUserToDelete(null)}
-          onConfirm={handleDeleteUser}
-          title="Delete User"
-          content={`Are you sure you want to delete user ${userToDelete?.username}? This action cannot be undone.`}
-        />
+        <Dialog open={openDialog} onClose={handleCloseDialog}>
+          <form onSubmit={handleSubmit}>
+            <DialogTitle>
+              {selectedUser ? t('users.editUser') : t('users.addUser')}
+            </DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                label={t('users.username')}
+                fullWidth
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                required
+                disabled={!!selectedUser}
+              />
+              <TextField
+                margin="dense"
+                label={t('users.email')}
+                type="email"
+                fullWidth
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+              {!selectedUser && (
+                <TextField
+                  margin="dense"
+                  label={t('users.password')}
+                  type="password"
+                  fullWidth
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
+                />
+              )}
+              <FormControl fullWidth margin="dense">
+                <InputLabel id="role-label">{t('users.role')}</InputLabel>
+                <Select
+                  labelId="role-label"
+                  value={formData.role}
+                  label={t('users.role')}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+                  required
+                >
+                  {Object.values(USER_ROLES).map((role) => (
+                    <MenuItem key={role} value={role}>
+                      {role}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialog}>{t('common.cancel')}</Button>
+              <Button type="submit" variant="contained" color="primary">
+                {t('common.save')}
+              </Button>
+            </DialogActions>
+          </form>
+        </Dialog>
       </Box>
     </PermissionGuard>
   );
-}; 
+};

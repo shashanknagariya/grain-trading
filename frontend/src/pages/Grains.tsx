@@ -22,8 +22,10 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { grainService, type Grain } from '../services/grainService';
+import { useTranslation } from 'react-i18next';
 
 export const Grains: FC = () => {
+  const { t } = useTranslation();
   const [grains, setGrains] = useState<Grain[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,8 +33,6 @@ export const Grains: FC = () => {
   const [selectedGrain, setSelectedGrain] = useState<Grain | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    variety: '',
-    description: ''
   });
 
   const loadGrains = async () => {
@@ -41,7 +41,7 @@ export const Grains: FC = () => {
       setGrains(data);
       setError('');
     } catch (err) {
-      setError('Failed to load grains');
+      setError(t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -54,18 +54,10 @@ export const Grains: FC = () => {
   const handleOpenDialog = (grain?: Grain) => {
     if (grain) {
       setSelectedGrain(grain);
-      setFormData({
-        name: grain.name,
-        variety: grain.variety || '',
-        description: grain.description || ''
-      });
+      setFormData({ name: grain.name });
     } else {
       setSelectedGrain(null);
-      setFormData({
-        name: '',
-        variety: '',
-        description: ''
-      });
+      setFormData({ name: '' });
     }
     setOpenDialog(true);
   };
@@ -73,11 +65,7 @@ export const Grains: FC = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedGrain(null);
-    setFormData({
-      name: '',
-      variety: '',
-      description: ''
-    });
+    setFormData({ name: '' });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,17 +79,17 @@ export const Grains: FC = () => {
       handleCloseDialog();
       loadGrains();
     } catch (err) {
-      setError('Failed to save grain');
+      setError(t('common.error'));
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this grain?')) {
+    if (window.confirm(t('grains.confirmDelete'))) {
       try {
         await grainService.delete(id);
         loadGrains();
       } catch (err) {
-        setError('Failed to delete grain');
+        setError(t('common.error'));
       }
     }
   };
@@ -115,11 +103,15 @@ export const Grains: FC = () => {
   }
 
   return (
-    <Box>
+    <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5">Grain Management</Typography>
-        <Button variant="contained" color="primary" onClick={() => handleOpenDialog()}>
-          Add New Grain
+        <Typography variant="h5">{t('grains.title')}</Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => handleOpenDialog()}
+        >
+          {t('grains.addGrain')}
         </Button>
       </Box>
 
@@ -129,71 +121,60 @@ export const Grains: FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Variety</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>{t('grains.grainName')}</TableCell>
+              <TableCell align="right">{t('common.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {grains.map((grain) => (
-              <TableRow key={grain.id}>
-                <TableCell>{grain.name}</TableCell>
-                <TableCell>{grain.variety}</TableCell>
-                <TableCell>{grain.description}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleOpenDialog(grain)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(grain.id)}>
-                    <DeleteIcon />
-                  </IconButton>
+            {grains.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={2} align="center">
+                  {t('common.noData')}
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              grains.map((grain) => (
+                <TableRow key={grain.id}>
+                  <TableCell>{grain.name}</TableCell>
+                  <TableCell align="right">
+                    <IconButton onClick={() => handleOpenDialog(grain)} size="small">
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(grain.id)} size="small" color="error">
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
         <form onSubmit={handleSubmit}>
           <DialogTitle>
-            {selectedGrain ? 'Edit Grain' : 'Add New Grain'}
+            {selectedGrain ? t('grains.editGrain') : t('grains.addGrain')}
           </DialogTitle>
           <DialogContent>
             <TextField
+              autoFocus
+              margin="dense"
+              label={t('grains.grainName')}
               fullWidth
-              label="Name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              margin="normal"
               required
-            />
-            <TextField
-              fullWidth
-              label="Variety"
-              value={formData.variety}
-              onChange={(e) => setFormData({ ...formData, variety: e.target.value })}
-              margin="normal"
-            />
-            <TextField
-              fullWidth
-              label="Description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              margin="normal"
-              multiline
-              rows={3}
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
+            <Button onClick={handleCloseDialog}>{t('common.cancel')}</Button>
             <Button type="submit" variant="contained" color="primary">
-              {selectedGrain ? 'Update' : 'Create'}
+              {t('common.save')}
             </Button>
           </DialogActions>
         </form>
       </Dialog>
     </Box>
   );
-}; 
+};
