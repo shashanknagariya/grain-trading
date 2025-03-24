@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { PermissionGuard } from './PermissionGuard';
 import { Permissions } from '../constants/permissions';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 import {
   Dashboard as DashboardIcon,
   ShoppingCart as PurchaseIcon,
@@ -25,6 +26,7 @@ const DRAWER_WIDTH = 240;
 export const Layout: FC<LayoutProps> = ({ children }) => {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -32,26 +34,28 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Purchases', icon: <PurchaseIcon />, path: '/purchases', permission: Permissions.MAKE_PURCHASE },
-    { text: 'Sales', icon: <SaleIcon />, path: '/sales', permission: Permissions.MAKE_SALE },
-    { text: 'Inventory', icon: <InventoryIcon />, path: '/inventory', permission: Permissions.MANAGE_INVENTORY },
-    { text: 'Grains', icon: <GrainIcon />, path: '/grains', permission: Permissions.MANAGE_INVENTORY },
-    { text: 'Godowns', icon: <WarehouseIcon />, path: '/godowns', permission: Permissions.MANAGE_INVENTORY },
-    { text: 'Users', icon: <PeopleIcon />, path: '/users', permission: Permissions.MANAGE_USERS }
+    { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/dashboard' },
+    { text: t('navigation.purchases'), icon: <PurchaseIcon />, path: '/purchases', permission: Permissions.MAKE_PURCHASE },
+    { text: t('navigation.sales'), icon: <SaleIcon />, path: '/sales', permission: Permissions.MAKE_SALE },
+    { text: t('navigation.inventory'), icon: <InventoryIcon />, path: '/inventory', permission: Permissions.MANAGE_INVENTORY },
+    { text: t('navigation.grains'), icon: <GrainIcon />, path: '/grains', permission: Permissions.MANAGE_INVENTORY },
+    { text: t('navigation.godowns'), icon: <WarehouseIcon />, path: '/godowns', permission: Permissions.MANAGE_INVENTORY },
+    { text: t('navigation.users'), icon: <PeopleIcon />, path: '/users', permission: Permissions.MANAGE_USERS }
   ];
 
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="h6">Grain Trading System</Typography>
+          <Typography variant="h6">{t('common.title')}</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <LanguageSwitcher />
             <Typography variant="body1">
               {user?.username}
             </Typography>
-            <Button color="inherit" onClick={handleLogout}>Logout</Button>
+            <Button color="inherit" onClick={handleLogout}>
+              {t('common.logout')}
+            </Button>
           </Box>
         </Toolbar>
       </AppBar>
@@ -95,4 +99,4 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
   );
 };
 
-export default Layout; 
+export default Layout;
