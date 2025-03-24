@@ -34,12 +34,12 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
   };
 
   const menuItems = [
-    { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/dashboard' },
-    { text: t('navigation.purchases'), icon: <PurchaseIcon />, path: '/purchases', permission: Permissions.CREATE_PURCHASE },
+    { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/dashboard', permission: Permissions.READ_ALL },
+    { text: t('navigation.purchases'), icon: <PurchaseIcon />, path: '/purchases', permission: Permissions.READ_ALL },
     { text: t('navigation.sales'), icon: <SaleIcon />, path: '/sales', permission: Permissions.MAKE_SALE },
     { text: t('navigation.inventory'), icon: <InventoryIcon />, path: '/inventory', permission: Permissions.MANAGE_INVENTORY },
-    { text: t('navigation.grains'), icon: <GrainIcon />, path: '/grains', permission: Permissions.MANAGE_INVENTORY },
-    { text: t('navigation.godowns'), icon: <WarehouseIcon />, path: '/godowns', permission: Permissions.MANAGE_INVENTORY },
+    { text: t('navigation.grains'), icon: <GrainIcon />, path: '/grains', permission: Permissions.READ_ALL },
+    { text: t('navigation.godowns'), icon: <WarehouseIcon />, path: '/godowns', permission: Permissions.READ_ALL },
     { text: t('navigation.users'), icon: <PeopleIcon />, path: '/users', permission: Permissions.MANAGE_USERS }
   ];
 
@@ -74,19 +74,12 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
         <Box sx={{ overflow: 'auto' }}>
           <List>
             {menuItems.map((item) => (
-              item.permission ? (
-                <PermissionGuard key={item.text} permission={item.permission}>
-                  <ListItem button component={Link} to={item.path}>
-                    <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.text} />
-                  </ListItem>
-                </PermissionGuard>
-              ) : (
-                <ListItem button key={item.text} component={Link} to={item.path}>
+              <PermissionGuard key={item.path} permission={item.permission}>
+                <ListItem button component={Link} to={item.path}>
                   <ListItemIcon>{item.icon}</ListItemIcon>
                   <ListItemText primary={item.text} />
                 </ListItem>
-              )
+              </PermissionGuard>
             ))}
           </List>
         </Box>
