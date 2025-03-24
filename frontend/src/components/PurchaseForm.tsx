@@ -49,6 +49,11 @@ interface PurchasePayload {
   rate_per_kg: number;
   godown_id: number;
   purchase_date: string;
+  payment_status: string;
+  payment_amount: number;
+  total_amount: number;
+  notes: string;
+  created_by: number;
 }
 
 interface PurchaseFormProps {
@@ -159,7 +164,7 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
       // Calculate total weight
       const totalWeight = (numberFields.number_of_bags * numberFields.weight_per_bag) + numberFields.extra_weight;
 
-      // Prepare the payload
+      // Prepare the payload with additional fields
       const payload: PurchasePayload = {
         grain_id: parseInt(formData.grain_id),
         seller_name: formData.seller_name.trim(),
@@ -169,11 +174,16 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
         total_weight: totalWeight,
         rate_per_kg: numberFields.rate_per_kg,
         godown_id: parseInt(formData.godown_id),
-        purchase_date: (formData.purchase_date || new Date()).toISOString()
+        purchase_date: (formData.purchase_date || new Date()).toISOString(),
+        payment_status: 'pending',
+        payment_amount: 0,
+        total_amount: totalWeight * numberFields.rate_per_kg,
+        notes: '',
+        created_by: parseInt(localStorage.getItem('user_id') || '1')
       };
 
       // Log the payload for debugging
-      console.log('Submitting purchase with payload:', payload);
+      console.log('Submitting purchase with payload:', JSON.stringify(payload, null, 2));
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases`, {
         method: 'POST',
@@ -184,11 +194,15 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
         body: JSON.stringify(payload)
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries([...response.headers.entries()]));
+
       let responseData;
       try {
         responseData = await response.json();
+        console.log('Response data:', responseData);
       } catch (e) {
-        // If response is not JSON
+        console.error('Error parsing response:', e);
         responseData = { message: 'Server error' };
       }
 
