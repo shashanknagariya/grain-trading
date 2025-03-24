@@ -12,9 +12,16 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Chip
+  Chip,
+  IconButton,
+  Menu,
+  MenuItem
 } from '@mui/material';
-import { Add as AddIcon, Print as PrintIcon } from '@mui/icons-material';
+import { 
+  Add as AddIcon, 
+  Print as PrintIcon,
+  MoreVert as MoreVertIcon
+} from '@mui/icons-material';
 import { Purchase } from '../types/purchase';
 import { formatCurrency } from '../utils/formatters';
 import { PermissionGuard } from '../components/PermissionGuard';
@@ -31,6 +38,10 @@ export const Purchases: FC = () => {
   const [openForm, setOpenForm] = useState(false);
   const navigate = useNavigate();
   const printRef = useRef<HTMLDivElement>(null);
+  
+  // For the action menu
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
 
   useEffect(() => {
     fetchPurchases();
@@ -77,9 +88,74 @@ export const Purchases: FC = () => {
     setOpenForm(false);
   };
 
-  const handlePrint = useReactToPrint({
+  // Handle menu open
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, purchase: Purchase) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedPurchase(purchase);
+  };
+
+  // Handle menu close
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedPurchase(null);
+  };
+
+  // Handle view details
+  const handleViewDetails = () => {
+    if (selectedPurchase) {
+      navigate(`/purchases/${selectedPurchase.id}`);
+    }
+    handleMenuClose();
+  };
+
+  // Handle print single purchase
+  const handlePrintSingle = useReactToPrint({
+    content: () => {
+      // Create a temporary div for printing
+      const printContent = document.createElement('div');
+      
+      if (selectedPurchase) {
+        // Create purchase receipt content
+        printContent.innerHTML = `
+          <div style="padding: 20px;">
+            <h2 style="text-align: center;">Purchase Receipt</h2>
+            <p style="text-align: center;">Bill Number: ${selectedPurchase.bill_number || ''}</p>
+            <hr />
+            <p><strong>Date:</strong> ${new Date(selectedPurchase.purchase_date).toLocaleDateString()}</p>
+            <p><strong>Supplier:</strong> ${selectedPurchase.supplier_name}</p>
+            <p><strong>Grain:</strong> ${selectedPurchase.grain_name}</p>
+            <p><strong>Amount:</strong> ${formatCurrency(selectedPurchase.total_amount)}</p>
+            <p><strong>Status:</strong> ${selectedPurchase.payment_status}</p>
+          </div>
+        `;
+      }
+      
+      return printContent;
+    },
+    documentTitle: selectedPurchase ? `Purchase-${selectedPurchase.bill_number || ''}` : 'Purchase',
+    onAfterPrint: handleMenuClose
+  });
+
+  // Handle print all purchases
+  const handlePrintAll = useReactToPrint({
     content: () => printRef.current,
     documentTitle: 'Purchases Report',
+    pageStyle: `
+      @media print {
+        body {
+          font-size: 12pt;
+        }
+        .MuiToolbar-root, .MuiButton-root, .no-print, .MuiIconButton-root {
+          display: none !important;
+        }
+        .MuiPaper-root {
+          box-shadow: none !important;
+        }
+        .MuiTableContainer-root {
+          overflow: visible !important;
+        }
+      }
+    `
   });
 
   return (
@@ -93,7 +169,7 @@ export const Purchases: FC = () => {
             variant="outlined"
             color="primary"
             startIcon={<PrintIcon />}
-            onClick={handlePrint}
+            onClick={handlePrintAll}
             sx={{ mr: 2 }}
           >
             {t('common.print')}
@@ -110,6 +186,15 @@ export const Purchases: FC = () => {
       </Box>
 
       <div ref={printRef}>
+        <Box mb={3} className="no-print-header">
+          <Typography variant="h4" component="h1" align="center" gutterBottom>
+            Purchases Report
+          </Typography>
+          <Typography variant="subtitle1" align="center" gutterBottom>
+            {new Date().toLocaleDateString()}
+          </Typography>
+        </Box>
+        
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -119,7 +204,7 @@ export const Purchases: FC = () => {
                 <TableCell>{t('purchases.grain_name')}</TableCell>
                 <TableCell>{t('purchases.total_amount')}</TableCell>
                 <TableCell>{t('purchases.payment_status')}</TableCell>
-                <TableCell>{t('common.actions')}</TableCell>
+                <TableCell className="no-print">{t('common.actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -138,14 +223,13 @@ export const Purchases: FC = () => {
                       size="small"
                     />
                   </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => navigate(`/purchases/${purchase.id}`)}
+                  <TableCell className="no-print">
+                    <IconButton
+                      aria-label="more"
+                      onClick={(e) => handleMenuOpen(e, purchase)}
                     >
-                      {t('purchases.view_details')}
-                    </Button>
+                      <MoreVertIcon />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -153,6 +237,20 @@ export const Purchases: FC = () => {
           </Table>
         </TableContainer>
       </div>
+
+      {/* Action Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleViewDetails}>
+          {t('purchases.view_details')}
+        </MenuItem>
+        <MenuItem onClick={handlePrintSingle}>
+          {t('common.print')}
+        </MenuItem>
+      </Menu>
 
       <PurchaseForm
         open={openForm}

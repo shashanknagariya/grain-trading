@@ -13,6 +13,7 @@ import { formatCurrency, formatDate } from '../utils/formatters';
 import { useNotification } from '../contexts/NotificationContext';
 import { useReactToPrint } from 'react-to-print';
 import PrintIcon from '@mui/icons-material/Print';
+import { useTranslation } from 'react-i18next';
 
 interface PurchaseDetail {
   id: string;
@@ -37,6 +38,7 @@ export const PurchaseDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchPurchaseDetail();
@@ -71,7 +73,21 @@ export const PurchaseDetailPage: React.FC = () => {
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: `Purchase-${purchase?.bill_number}`,
+    documentTitle: `Purchase-${purchase?.bill_number || ''}`,
+    pageStyle: `
+      @media print {
+        body {
+          font-size: 12pt;
+        }
+        .MuiToolbar-root, .MuiButton-root.no-print, .no-print {
+          display: none !important;
+        }
+        .MuiPaper-root {
+          box-shadow: none !important;
+          padding: 20px !important;
+        }
+      }
+    `
   });
 
   if (loading) {
@@ -95,18 +111,28 @@ export const PurchaseDetailPage: React.FC = () => {
       <Paper sx={{ p: 3 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h4" component="h1">
-            Purchase Details
+            {t('purchases.purchase_details')}
           </Typography>
           <Button
             variant="outlined"
             color="primary"
             startIcon={<PrintIcon />}
             onClick={handlePrint}
+            className="no-print"
           >
-            Print
+            {t('common.print')}
           </Button>
         </Box>
         <div ref={printRef}>
+          <Box mb={3} className="print-only" sx={{ display: 'none' }}>
+            <Typography variant="h4" component="h1" align="center" gutterBottom>
+              Purchase Receipt
+            </Typography>
+            <Typography variant="subtitle1" align="center" gutterBottom>
+              Bill Number: {purchase?.bill_number}
+            </Typography>
+          </Box>
+          
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Typography variant="h5" gutterBottom>
