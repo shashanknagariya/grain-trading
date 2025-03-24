@@ -20,8 +20,12 @@ import { formatCurrency } from '../utils/formatters';
 import { PermissionGuard } from '../components/PermissionGuard';
 import { Permissions } from '../constants/permissions';
 import { PurchaseForm } from '../components/PurchaseForm';
+import { useTranslation } from 'react-i18next';
+import { useNotification } from '../contexts/NotificationContext';
 
 export const Purchases: FC = () => {
+  const { t } = useTranslation();
+  const { showError } = useNotification();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [openForm, setOpenForm] = useState(false);
   const navigate = useNavigate();
@@ -37,11 +41,11 @@ export const Purchases: FC = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch purchases');
+      if (!response.ok) throw new Error(t('errors.fetch_error'));
       const data = await response.json();
       setPurchases(data);
     } catch (error) {
-      console.error('Error:', error);
+      showError(t('errors.fetch_error'));
     }
   };
 
@@ -49,28 +53,34 @@ export const Purchases: FC = () => {
     switch (status) {
       case 'paid':
         return 'success';
-      case 'partially_paid':
+      case 'pending':
+        return 'error';
+      case 'partial':
         return 'warning';
       default:
-        return 'error';
+        return 'default';
     }
   };
 
-  const handleRowClick = (purchaseId: number) => {
-    navigate(`/purchases/${purchaseId}`);
+  const handlePurchaseCreated = () => {
+    setOpenForm(false);
+    fetchPurchases();
   };
 
   return (
-    <Box>
+    <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Purchases</Typography>
-        <PermissionGuard permission={Permissions.MAKE_PURCHASE}>
+        <Typography variant="h4" component="h1">
+          {t('purchases.title')}
+        </Typography>
+        <PermissionGuard permission={Permissions.CREATE_PURCHASE}>
           <Button
             variant="contained"
+            color="primary"
             startIcon={<AddIcon />}
             onClick={() => setOpenForm(true)}
           >
-            New Purchase
+            {t('purchases.add_purchase')}
           </Button>
         </PermissionGuard>
       </Box>
@@ -79,30 +89,38 @@ export const Purchases: FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Bill Number</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Supplier</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Payment Status</TableCell>
+              <TableCell>{t('purchases.purchase_date')}</TableCell>
+              <TableCell>{t('purchases.seller_name')}</TableCell>
+              <TableCell>{t('purchases.grain_name')}</TableCell>
+              <TableCell>{t('purchases.total_amount')}</TableCell>
+              <TableCell>{t('purchases.payment_status')}</TableCell>
+              <TableCell>{t('common.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {purchases.map((purchase) => (
-              <TableRow 
-                key={purchase.id}
-                onClick={() => handleRowClick(purchase.id)}
-                sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
-              >
-                <TableCell>{purchase.bill_number}</TableCell>
-                <TableCell>{new Date(purchase.purchase_date).toLocaleDateString()}</TableCell>
-                <TableCell>{purchase.supplier_name}</TableCell>
+              <TableRow key={purchase.id}>
+                <TableCell>
+                  {new Date(purchase.purchase_date).toLocaleDateString()}
+                </TableCell>
+                <TableCell>{purchase.seller_name}</TableCell>
+                <TableCell>{purchase.grain_name}</TableCell>
                 <TableCell>{formatCurrency(purchase.total_amount)}</TableCell>
                 <TableCell>
-                  <Chip 
-                    label={purchase.payment_status.replace('_', ' ')}
+                  <Chip
+                    label={t(`purchases.${purchase.payment_status}`)}
                     color={getStatusColor(purchase.payment_status)}
                     size="small"
                   />
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => navigate(`/purchases/${purchase.id}`)}
+                  >
+                    {t('purchases.view_details')}
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -113,8 +131,8 @@ export const Purchases: FC = () => {
       <PurchaseForm
         open={openForm}
         onClose={() => setOpenForm(false)}
-        onSubmit={fetchPurchases}
+        onSubmit={handlePurchaseCreated}
       />
     </Box>
   );
-}; 
+};

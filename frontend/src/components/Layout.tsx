@@ -35,7 +35,7 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
 
   const menuItems = [
     { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/dashboard' },
-    { text: t('navigation.purchases'), icon: <PurchaseIcon />, path: '/purchases', permission: Permissions.MAKE_PURCHASE },
+    { text: t('navigation.purchases'), icon: <PurchaseIcon />, path: '/purchases', permission: Permissions.CREATE_PURCHASE },
     { text: t('navigation.sales'), icon: <SaleIcon />, path: '/sales', permission: Permissions.MAKE_SALE },
     { text: t('navigation.inventory'), icon: <InventoryIcon />, path: '/inventory', permission: Permissions.MANAGE_INVENTORY },
     { text: t('navigation.grains'), icon: <GrainIcon />, path: '/grains', permission: Permissions.MANAGE_INVENTORY },

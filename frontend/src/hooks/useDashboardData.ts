@@ -1,62 +1,45 @@
 import { useState, useEffect } from 'react';
+import { useNotification } from '../contexts/NotificationContext';
 
-interface DashboardMetrics {
+export interface DashboardMetrics {
   totalSales: number;
   totalPurchases: number;
-  activeUsers: number;
-  // ... other metrics
-}
-
-interface ChartData {
-  // ... chart data structure
-}
-
-interface Activity {
-  id: string;
-  title: string;
-  description: string;
-  timestamp: string;
-  type: 'sale' | 'purchase' | 'user';
+  inventory: number;
 }
 
 export const useDashboardData = () => {
+  const { showError } = useNotification();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [chartData, setChartData] = useState<ChartData | null>(null);
-  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
+  const [chartData, setChartData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchData = async () => {
       try {
-        setIsLoading(true);
-        // Fetch your data here
-        // const response = await fetch('/api/dashboard');
-        // const data = await response.json();
-        
-        // For now, using mock data
-        setMetrics({
-          totalSales: 100,
-          totalPurchases: 50,
-          activeUsers: 25
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/dashboard/metrics`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         });
-        setChartData(null); // Add your chart data
-        setRecentActivity([]); // Add your activity data
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch dashboard data');
+        }
+        const data = await response.json();
+        setMetrics(data.metrics);
+        setChartData(data.chartData);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch dashboard data'));
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        showError(errorMessage);
+        setError(err instanceof Error ? err : new Error(errorMessage));
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchDashboardData();
-  }, []);
+    fetchData();
+  }, [showError]);
 
-  return {
-    metrics,
-    chartData,
-    recentActivity,
-    isLoading,
-    error
-  };
-}; 
+  return { metrics, chartData, isLoading, error };
+};

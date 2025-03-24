@@ -1,36 +1,24 @@
 import React from 'react';
-import { Card, CardContent, Typography, Box } from '@mui/material';
-import { formatDistanceToNow } from 'date-fns';
+import { Card, CardContent, Typography } from '@mui/material';
+import { formatCurrency } from '../utils/formatters';
 
-interface DashboardCardProps {
+export interface DashboardCardProps {
   title: string;
-  description: string;
-  timestamp: string;
+  value: number;
   type: 'sale' | 'purchase' | 'user';
 }
 
-export const DashboardCard: React.FC<DashboardCardProps> = ({
-  title,
-  description,
-  timestamp,
-  type
-}) => {
+export const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, type }) => {
   return (
-    <Card sx={{ mb: 2 }}>
+    <Card>
       <CardContent>
-        <Typography variant="h6">{title}</Typography>
-        <Typography variant="body2" color="text.secondary">
-          {description}
+        <Typography variant="h6" gutterBottom>
+          {title}
         </Typography>
-        <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="caption" color="text.secondary">
-            {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {type}
-          </Typography>
-        </Box>
+        <Typography variant="h4">
+          {type === 'sale' || type === 'purchase' ? formatCurrency(value) : value}
+        </Typography>
       </CardContent>
     </Card>
   );
-}; 
+};

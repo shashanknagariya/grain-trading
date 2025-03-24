@@ -1,12 +1,22 @@
 export interface Purchase {
-    id: number;
-    bill_number: string;
-    grain_name: string;
-    supplier_name: string;
-    total_amount: number;
-    payment_status: 'pending' | 'partially_paid' | 'paid';
-    paid_amount: number;
-    purchase_date: string;
+  id: number;
+  purchase_date: string;
+  seller_name: string;
+  seller_gst?: string;
+  grain_name: string;
+  grain_id: number;
+  number_of_bags: number;
+  total_weight: number;
+  rate_per_kg: number;
+  total_amount: number;
+  payment_status: 'paid' | 'pending' | 'partial';
+  transportation_mode: string;
+  vehicle_number: string;
+  driver_name: string;
+  lr_number?: string;
+  po_number?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PurchaseDetail {
