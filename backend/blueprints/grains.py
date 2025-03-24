@@ -4,6 +4,18 @@ from models import Grain, db
 
 grains = Blueprint('grains', __name__)
 
+@grains.route('/grains', methods=['GET'])
+@jwt_required()
+def get_grains():
+    try:
+        grains = Grain.query.all()
+        return jsonify([{
+            'id': grain.id,
+            'name': grain.name
+        } for grain in grains]), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @grains.route('/grains', methods=['POST'])
 @jwt_required()
 def create_grain():
@@ -20,28 +32,46 @@ def create_grain():
         
         return jsonify({
             'id': grain.id,
-            'name': grain.name,
-            'created_at': grain.created_at.isoformat()
+            'name': grain.name
         }), 201
-        
     except Exception as e:
         db.session.rollback()
-        print(f"Error creating grain: {str(e)}")
-        return jsonify({'error': 'Failed to create grain'}), 500
+        return jsonify({'error': str(e)}), 500
 
-@grains.route('/grains', methods=['GET'])
+@grains.route('/grains/<int:grain_id>', methods=['PUT'])
 @jwt_required()
-def get_grains():
+def update_grain(grain_id):
     try:
-        print("Fetching grains...")  # Debug log
-        grains = Grain.query.all()
-        response = [{
+        grain = Grain.query.get(grain_id)
+        if not grain:
+            return jsonify({'error': 'Grain not found'}), 404
+            
+        data = request.get_json()
+        if 'name' in data:
+            grain.name = data['name']
+            
+        db.session.commit()
+        
+        return jsonify({
             'id': grain.id,
-            'name': grain.name,
-            'created_at': grain.created_at.isoformat()
-        } for grain in grains]
-        print(f"Found {len(response)} grains")  # Debug log
-        return jsonify(response)
+            'name': grain.name
+        }), 200
     except Exception as e:
-        print(f"Error fetching grains: {str(e)}")  # Error log
-        return jsonify({'error': 'Failed to fetch grains'}), 500 
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@grains.route('/grains/<int:grain_id>', methods=['DELETE'])
+@jwt_required()
+def delete_grain(grain_id):
+    try:
+        grain = Grain.query.get(grain_id)
+        if not grain:
+            return jsonify({'error': 'Grain not found'}), 404
+            
+        db.session.delete(grain)
+        db.session.commit()
+        
+        return '', 204
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500

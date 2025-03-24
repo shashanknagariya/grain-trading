@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 dashboard = Blueprint('dashboard', __name__)
 
-@dashboard.route('/metrics', methods=['GET', 'OPTIONS'])
+@dashboard.route('/dashboard/metrics', methods=['GET', 'OPTIONS'])
 @jwt_required(optional=True)
 def get_dashboard_metrics():
     # Handle OPTIONS request
@@ -109,20 +109,17 @@ def get_dashboard_summary():
             'inventory_value': float(inventory_value.total_value or 0),
             'recent_sales': [{
                 'id': sale.id,
-                'bill_number': sale.bill_number,
                 'buyer_name': sale.buyer_name,
-                'amount': sale.total_amount,
+                'amount': float(sale.total_amount),
                 'date': sale.sale_date.isoformat()
             } for sale in recent_sales],
             'recent_purchases': [{
                 'id': purchase.id,
-                'bill_number': purchase.bill_number,
-                'supplier_name': purchase.supplier_name,
-                'amount': purchase.total_amount,
+                'seller_name': purchase.seller_name,
+                'amount': float(purchase.total_amount),
                 'date': purchase.purchase_date.isoformat()
             } for purchase in recent_purchases]
         }), 200
 
     except Exception as e:
-        print(f"Dashboard Error: {str(e)}")
-        return jsonify({'error': 'Failed to fetch dashboard data'}), 500
+        return jsonify({'error': str(e)}), 500

@@ -74,16 +74,21 @@ def create_app():
     # Import models
     from models import User, Grain, Purchase, Inventory, Sale
     
-    # Register blueprints
-    app.register_blueprint(auth, url_prefix='/api/auth')
-    app.register_blueprint(grains, url_prefix='/api/grains')
-    app.register_blueprint(purchase, url_prefix='/api/purchases')
-    app.register_blueprint(inventory, url_prefix='/api/inventory')
-    app.register_blueprint(dashboard, url_prefix='/api/dashboard')
-    app.register_blueprint(sale, url_prefix='/api/sales')
-    app.register_blueprint(users, url_prefix='/api/users')
-    app.register_blueprint(godown, url_prefix='/api/godowns')
-    app.register_blueprint(payment, url_prefix='/api/payments')
+    # Register blueprints with the correct URL prefixes
+    blueprints = [
+        (auth, '/api/auth'),
+        (grains, '/api'),  # This will handle /api/grains/*
+        (purchase, '/api'),  # This will handle /api/purchases/*
+        (inventory, '/api'),  # This will handle /api/inventory/*
+        (dashboard, '/api'),  # This will handle /api/dashboard/*
+        (sale, '/api'),  # This will handle /api/sales/*
+        (users, '/api'),  # This will handle /api/users/*
+        (godown, '/api'),  # This will handle /api/godowns/*
+        (payment, '/api'),  # This will handle /api/payments/*
+    ]
+    
+    for blueprint, prefix in blueprints:
+        app.register_blueprint(blueprint, url_prefix=prefix)
     
     # Initialize CLI commands
     init_commands(app)
