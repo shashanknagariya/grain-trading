@@ -90,14 +90,6 @@ export const PurchaseDetails: React.FC<PurchaseDetailsProps> = ({
           <Grid item xs={12} sm={6}>
             <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
               <Typography variant="subtitle2" color="text.secondary">
-                {t('purchases.bill_number')}
-              </Typography>
-              <Typography variant="body1">{purchase.id || '-'}</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
-              <Typography variant="subtitle2" color="text.secondary">
                 {t('purchases.seller_name')}
               </Typography>
               <Typography variant="body1">{purchase.seller_name}</Typography>
@@ -139,6 +131,80 @@ export const PurchaseDetails: React.FC<PurchaseDetailsProps> = ({
               />
             </Paper>
           </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                {t('purchases.number_of_bags')}
+              </Typography>
+              <Typography variant="body1">{purchase.number_of_bags}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                {t('purchases.total_weight')}
+              </Typography>
+              <Typography variant="body1">{purchase.total_weight ? `${purchase.total_weight} kg` : '-'}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                {t('purchases.rate_per_kg')}
+              </Typography>
+              <Typography variant="body1">{formatCurrency(purchase.rate_per_kg)}</Typography>
+            </Paper>
+          </Grid>
+          {purchase.transportation_mode && (
+            <Grid item xs={12} sm={6}>
+              <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('purchases.transportation_mode')}
+                </Typography>
+                <Typography variant="body1">{purchase.transportation_mode}</Typography>
+              </Paper>
+            </Grid>
+          )}
+          {purchase.vehicle_number && (
+            <Grid item xs={12} sm={6}>
+              <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('purchases.vehicle_number')}
+                </Typography>
+                <Typography variant="body1">{purchase.vehicle_number}</Typography>
+              </Paper>
+            </Grid>
+          )}
+          {purchase.driver_name && (
+            <Grid item xs={12} sm={6}>
+              <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('purchases.driver_name')}
+                </Typography>
+                <Typography variant="body1">{purchase.driver_name}</Typography>
+              </Paper>
+            </Grid>
+          )}
+          {purchase.lr_number && (
+            <Grid item xs={12} sm={6}>
+              <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('purchases.lr_number')}
+                </Typography>
+                <Typography variant="body1">{purchase.lr_number}</Typography>
+              </Paper>
+            </Grid>
+          )}
+          {purchase.po_number && (
+            <Grid item xs={12} sm={6}>
+              <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('purchases.po_number')}
+                </Typography>
+                <Typography variant="body1">{purchase.po_number}</Typography>
+              </Paper>
+            </Grid>
+          )}
         </Grid>
       </DialogContent>
       <DialogActions>

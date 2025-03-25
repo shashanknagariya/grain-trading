@@ -110,8 +110,8 @@ export const PurchaseBillPrint: React.FC<PurchaseBillPrintProps> = ({ purchase }
             <td className="center">1</td>
             <td>{purchase.grain_name}</td>
             <td className="center">1001</td>
-            <td className="right">{purchase.total_weight.toFixed(1)} kg</td>
-            <td className="right">{formatCurrency(purchase.rate_per_kg)}</td>
+            <td className="right">{purchase.total_weight ? `${purchase.total_weight.toFixed(1)} kg` : '-'}</td>
+            <td className="right">{formatCurrency(purchase.rate_per_kg || 0)}</td>
             <td className="right">{formatCurrency(purchase.total_amount)}</td>
           </tr>
           {/* Empty rows for consistent look */}

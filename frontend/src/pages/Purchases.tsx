@@ -1,306 +1,165 @@
-import React, { useState, useEffect, useRef } from 'react';
-import type { FC } from 'react';
-import {
-  Box,
-  Button,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-  Chip,
-  IconButton,
-  Menu,
-  MenuItem
-} from '@mui/material';
-import { 
-  Add as AddIcon, 
-  Print as PrintIcon,
-  MoreVert as MoreVertIcon
-} from '@mui/icons-material';
+import React from 'react';
+import { formatDate, formatCurrency } from '../utils/formatters';
 import { Purchase } from '../types/purchase';
-import { formatCurrency } from '../utils/formatters';
-import { PurchaseForm } from '../components/PurchaseForm';
-import { useTranslation } from 'react-i18next';
-import { useNotification } from '../contexts/NotificationContext';
-import { useReactToPrint } from 'react-to-print';
-import { PurchaseDetails } from '../components/PurchaseDetails';
-import { PurchaseBillPrint } from '../components/PurchaseBillPrint';
+import './PurchaseBillPrint.css'; // You'll need to create this CSS file
 
-export const Purchases: FC = () => {
-  const { t } = useTranslation();
-  const { showError } = useNotification();
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [openForm, setOpenForm] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const printRef = useRef<HTMLDivElement>(null);
-  const printComponentRef = useRef<HTMLDivElement>(null);
-  
-  // For the action menu
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
+interface PurchaseBillPrintProps {
+  purchase: Purchase | null;
+}
 
-  useEffect(() => {
-    fetchPurchases();
-  }, []);
-
-  const fetchPurchases = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (!response.ok) throw new Error(t('errors.fetch_error'));
-      const data = await response.json();
-      setPurchases(data);
-      setLoading(false);
-    } catch (error) {
-      showError(t('errors.fetch_error'));
-      setLoading(false);
-    }
-  };
-
-  const handlePrint = useReactToPrint({
-    content: () => printComponentRef.current,
-    documentTitle: `${t('purchases.title')}-${selectedPurchase?.id || t('purchases.bill')}`,
-    onAfterPrint: () => console.log('Printed successfully')
-  });
-
-  const handlePaymentStatusChange = async (purchaseId: number, newStatus: 'pending' | 'paid' | 'partial') => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases/${purchaseId}/payment-status`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (!response.ok) throw new Error(t('errors.save_error'));
-      
-      setPurchases(purchases.map(purchase => 
-        purchase.id === purchaseId 
-          ? { ...purchase, payment_status: newStatus }
-          : purchase
-      ));
-
-      if (selectedPurchase && selectedPurchase.id === purchaseId) {
-        setSelectedPurchase({ ...selectedPurchase, payment_status: newStatus });
-      }
-      
-      showError(t('purchases.status_updated'));
-    } catch (error) {
-      showError(t('errors.save_error'));
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'success';
-      case 'pending':
-        return 'error';
-      case 'partial':
-        return 'warning';
-      default:
-        return 'default';
-    }
-  };
-
-  const handlePurchaseCreated = () => {
-    setOpenForm(false);
-    fetchPurchases();
-  };
-
-  const handleOpenCreate = () => {
-    setOpenForm(true);
-  };
-
-  const handleCloseCreate = () => {
-    setOpenForm(false);
-  };
-
-  // Handle menu open
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, purchase: Purchase) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedPurchase(purchase);
-  };
-
-  // Handle menu close
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  // Handle view details
-  const handleViewDetails = () => {
-    if (selectedPurchase) {
-      setDetailsOpen(true);
-    }
-    handleMenuClose();
-  };
-
-  // Handle print single purchase
-  const handlePrintBill = (purchase: Purchase) => {
-    setSelectedPurchase(purchase);
-    setTimeout(() => {
-      handlePrint();
-    }, 100);
-    handleMenuClose();
-  };
-
-  // Handle print all purchases
-  const handlePrintAll = useReactToPrint({
-    content: () => printRef.current,
-    documentTitle: 'Purchases Report',
-    pageStyle: `
-      @media print {
-        body {
-          font-size: 12pt;
-        }
-        .MuiToolbar-root, .MuiButton-root, .no-print, .MuiIconButton-root {
-          display: none !important;
-        }
-        .MuiPaper-root {
-          box-shadow: none !important;
-        }
-        .MuiTableContainer-root {
-          overflow: visible !important;
-        }
-      }
-    `
-  });
-
-  if (loading) {
-    return <Typography>{t('common.loading')}</Typography>;
-  }
+export const PurchaseBillPrint: React.FC<PurchaseBillPrintProps> = ({ purchase }) => {
+  if (!purchase) return null;
 
   return (
-    <Box p={3}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1">
-          {t('purchases.title')}
-        </Typography>
-        <Box>
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<PrintIcon />}
-            onClick={handlePrintAll}
-            sx={{ mr: 2 }}
-          >
-            {t('common.print')}
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={handleOpenCreate}
-          >
-            {t('purchases.add_purchase')}
-          </Button>
-        </Box>
-      </Box>
-
-      <div ref={printRef}>
-        <Box mb={3} className="no-print-header">
-          <Typography variant="h4" component="h1" align="center" gutterBottom>
-            Purchases Report
-          </Typography>
-          <Typography variant="subtitle1" align="center" gutterBottom>
-            {new Date().toLocaleDateString()}
-          </Typography>
-        </Box>
-        
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('purchases.purchase_date')}</TableCell>
-                <TableCell>{t('purchases.seller_name')}</TableCell>
-                <TableCell>{t('purchases.grain_name')}</TableCell>
-                <TableCell>{t('purchases.total_amount')}</TableCell>
-                <TableCell>{t('purchases.payment_status')}</TableCell>
-                <TableCell className="no-print">{t('common.actions')}</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {purchases.map((purchase) => (
-                <TableRow key={purchase.id}>
-                  <TableCell>
-                    {new Date(purchase.purchase_date).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>{purchase.seller_name}</TableCell>
-                  <TableCell>{purchase.grain_name}</TableCell>
-                  <TableCell>{formatCurrency(purchase.total_amount)}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={t(`purchases.${purchase.payment_status}`)}
-                      color={getStatusColor(purchase.payment_status)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell className="no-print">
-                    <IconButton
-                      aria-label="more"
-                      onClick={(e) => handleMenuOpen(e, purchase)}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+    <div className="bill-print">
+      {/* Header */}
+      <div className="header">
+        <div className="company-info">
+          <h1 className="company-name">BADRI PRASAD MAHESH PRASAD NAGARIYA</h1>
+          <p>Ganj chhatarpur mp 471105</p>
+          <p>Contact: 7619595475</p>
+          <p>Email: nagariya.shashank7@gmail.com</p>
+          <p>GSTIN: 23AAXXXYYY8M1ZM</p>
+          <p>PAN No: AAXXXYYY</p>
+        </div>
       </div>
 
-      {/* Action Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={handleViewDetails}>
-          {t('purchases.view_details')}
-        </MenuItem>
-        <MenuItem onClick={() => {
-          if (selectedPurchase) handlePrintBill(selectedPurchase);
-        }}>
-          {t('common.print')}
-        </MenuItem>
-      </Menu>
+      <div className="bill-title">PURCHASE RECEIPT</div>
 
-      {/* Purchase Form */}
-      <PurchaseForm
-        open={openForm}
-        onClose={handleCloseCreate}
-        onSubmit={handlePurchaseCreated}
-      />
-
-      {/* Purchase Details Modal */}
-      <PurchaseDetails
-        open={detailsOpen}
-        onClose={() => setDetailsOpen(false)}
-        purchase={selectedPurchase}
-        onPrint={handlePrint}
-        handlePaymentStatusChange={handlePaymentStatusChange}
-      />
-
-      {/* Hidden Print Template */}
-      <div style={{ display: 'none' }}>
-        {selectedPurchase && (
-          <div ref={printComponentRef}>
-            <PurchaseBillPrint purchase={selectedPurchase} />
-          </div>
-        )}
+      {/* Bill Info Grid */}
+      <div className="info-grid">
+        <div className="info-section">
+          <table className="info-table">
+            <tbody>
+              <tr>
+                <td>Purchase Date</td>
+                <td>:</td>
+                <td>{formatDate(new Date(purchase.purchase_date))}</td>
+              </tr>
+              <tr>
+                <td>Transportation Mode</td>
+                <td>:</td>
+                <td>{purchase.transportation_mode}</td>
+              </tr>
+              <tr>
+                <td>Vehicle Number</td>
+                <td>:</td>
+                <td>{purchase.vehicle_number}</td>
+              </tr>
+              {purchase.lr_number && (
+                <tr>
+                  <td>LR Number</td>
+                  <td>:</td>
+                  <td>{purchase.lr_number}</td>
+                </tr>
+              )}
+              {purchase.po_number && (
+                <tr>
+                  <td>PO Number</td>
+                  <td>:</td>
+                  <td>{purchase.po_number}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </Box>
+
+      {/* Supplier Details */}
+      <div className="party-details">
+        <div className="party-section">
+          <h3>Supplier Details:</h3>
+          <table className="party-table">
+            <tbody>
+              <tr>
+                <td>Name</td>
+                <td>:</td>
+                <td>{purchase.seller_name}</td>
+              </tr>
+              {purchase.seller_gst && (
+                <tr>
+                  <td>GSTIN</td>
+                  <td>:</td>
+                  <td>{purchase.seller_gst}</td>
+                </tr>
+              )}
+              <tr>
+                <td>Driver Name</td>
+                <td>:</td>
+                <td>{purchase.driver_name}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Items Table */}
+      <table className="items-table">
+        <thead>
+          <tr>
+            <th>Sr. No.</th>
+            <th>Description of Goods</th>
+            <th>HSN/SAC</th>
+            <th>Quantity</th>
+            <th>Rate</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="center">1</td>
+            <td>{purchase.grain_name}</td>
+            <td className="center">1001</td>
+            <td className="right">{purchase.total_weight ? `${purchase.total_weight.toFixed(1)} kg` : '-'}</td>
+            <td className="right">{formatCurrency(purchase.rate_per_kg || 0)}</td>
+            <td className="right">{formatCurrency(purchase.total_amount)}</td>
+          </tr>
+          {/* Empty rows for consistent look */}
+          {[...Array(4)].map((_, i) => (
+            <tr key={i} className="empty-row">
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={5} className="right bold">Total Amount</td>
+            <td className="right bold">{formatCurrency(purchase.total_amount)}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      {/* Additional Info */}
+      <div className="additional-info">
+        <table className="info-table">
+          <tbody>
+            <tr>
+              <td>Number of Bags</td>
+              <td>:</td>
+              <td>{purchase.number_of_bags}</td>
+            </tr>
+            <tr>
+              <td>Payment Status</td>
+              <td>:</td>
+              <td>{purchase.payment_status.toUpperCase()}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Footer */}
+      <div className="footer">
+        <div className="signature">
+          <p>For, BADRI PRASAD MAHESH PRASAD NAGARIYA</p>
+          <div className="signature-space"></div>
+          <p>Authorized Signatory</p>
+        </div>
+      </div>
+    </div>
   );
 };
