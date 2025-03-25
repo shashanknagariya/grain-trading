@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { FC } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -24,24 +23,26 @@ import {
 } from '@mui/icons-material';
 import { Purchase } from '../types/purchase';
 import { formatCurrency } from '../utils/formatters';
-import { PermissionGuard } from '../components/PermissionGuard';
-import { Permissions } from '../constants/permissions';
 import { PurchaseForm } from '../components/PurchaseForm';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
 import { useReactToPrint } from 'react-to-print';
+import { PurchaseDetails } from '../components/PurchaseDetails';
+import { PurchaseBillPrint } from '../components/PurchaseBillPrint';
 
 export const Purchases: FC = () => {
   const { t } = useTranslation();
   const { showError } = useNotification();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [openForm, setOpenForm] = useState(false);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const printRef = useRef<HTMLDivElement>(null);
+  const printComponentRef = useRef<HTMLDivElement>(null);
   
   // For the action menu
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   useEffect(() => {
     fetchPurchases();
@@ -49,6 +50,7 @@ export const Purchases: FC = () => {
 
   const fetchPurchases = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -57,8 +59,45 @@ export const Purchases: FC = () => {
       if (!response.ok) throw new Error(t('errors.fetch_error'));
       const data = await response.json();
       setPurchases(data);
+      setLoading(false);
     } catch (error) {
       showError(t('errors.fetch_error'));
+      setLoading(false);
+    }
+  };
+
+  const handlePrint = useReactToPrint({
+    content: () => printComponentRef.current,
+    documentTitle: `${t('purchases.title')}-${selectedPurchase?.id || t('purchases.bill')}`,
+    onAfterPrint: () => console.log('Printed successfully')
+  });
+
+  const handlePaymentStatusChange = async (purchaseId: number, newStatus: 'pending' | 'paid' | 'partial') => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases/${purchaseId}/payment-status`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) throw new Error(t('errors.save_error'));
+      
+      setPurchases(purchases.map(purchase => 
+        purchase.id === purchaseId 
+          ? { ...purchase, payment_status: newStatus }
+          : purchase
+      ));
+
+      if (selectedPurchase && selectedPurchase.id === purchaseId) {
+        setSelectedPurchase({ ...selectedPurchase, payment_status: newStatus });
+      }
+      
+      showError(t('purchases.status_updated'));
+    } catch (error) {
+      showError(t('errors.save_error'));
     }
   };
 
@@ -97,44 +136,24 @@ export const Purchases: FC = () => {
   // Handle menu close
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setSelectedPurchase(null);
   };
 
   // Handle view details
   const handleViewDetails = () => {
     if (selectedPurchase) {
-      navigate(`/purchases/${selectedPurchase.id}`);
+      setDetailsOpen(true);
     }
     handleMenuClose();
   };
 
   // Handle print single purchase
-  const handlePrintSingle = useReactToPrint({
-    content: () => {
-      // Create a temporary div for printing
-      const printContent = document.createElement('div');
-      
-      if (selectedPurchase) {
-        // Create purchase receipt content
-        printContent.innerHTML = `
-          <div style="padding: 20px;">
-            <h2 style="text-align: center;">Purchase Receipt</h2>
-            <p style="text-align: center;">Bill Number: ${selectedPurchase.bill_number || ''}</p>
-            <hr />
-            <p><strong>Date:</strong> ${new Date(selectedPurchase.purchase_date).toLocaleDateString()}</p>
-            <p><strong>Supplier:</strong> ${selectedPurchase.supplier_name}</p>
-            <p><strong>Grain:</strong> ${selectedPurchase.grain_name}</p>
-            <p><strong>Amount:</strong> ${formatCurrency(selectedPurchase.total_amount)}</p>
-            <p><strong>Status:</strong> ${selectedPurchase.payment_status}</p>
-          </div>
-        `;
-      }
-      
-      return printContent;
-    },
-    documentTitle: selectedPurchase ? `Purchase-${selectedPurchase.bill_number || ''}` : 'Purchase',
-    onAfterPrint: handleMenuClose
-  });
+  const handlePrintBill = (purchase: Purchase) => {
+    setSelectedPurchase(purchase);
+    setTimeout(() => {
+      handlePrint();
+    }, 100);
+    handleMenuClose();
+  };
 
   // Handle print all purchases
   const handlePrintAll = useReactToPrint({
@@ -157,6 +176,10 @@ export const Purchases: FC = () => {
       }
     `
   });
+
+  if (loading) {
+    return <Typography>{t('common.loading')}</Typography>;
+  }
 
   return (
     <Box p={3}>
@@ -213,7 +236,7 @@ export const Purchases: FC = () => {
                   <TableCell>
                     {new Date(purchase.purchase_date).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>{purchase.supplier_name}</TableCell>
+                  <TableCell>{purchase.seller_name}</TableCell>
                   <TableCell>{purchase.grain_name}</TableCell>
                   <TableCell>{formatCurrency(purchase.total_amount)}</TableCell>
                   <TableCell>
@@ -247,16 +270,37 @@ export const Purchases: FC = () => {
         <MenuItem onClick={handleViewDetails}>
           {t('purchases.view_details')}
         </MenuItem>
-        <MenuItem onClick={handlePrintSingle}>
+        <MenuItem onClick={() => {
+          if (selectedPurchase) handlePrintBill(selectedPurchase);
+        }}>
           {t('common.print')}
         </MenuItem>
       </Menu>
 
+      {/* Purchase Form */}
       <PurchaseForm
         open={openForm}
         onClose={handleCloseCreate}
         onSubmit={handlePurchaseCreated}
       />
+
+      {/* Purchase Details Modal */}
+      <PurchaseDetails
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        purchase={selectedPurchase}
+        onPrint={handlePrint}
+        handlePaymentStatusChange={handlePaymentStatusChange}
+      />
+
+      {/* Hidden Print Template */}
+      <div style={{ display: 'none' }}>
+        {selectedPurchase && (
+          <div ref={printComponentRef}>
+            <PurchaseBillPrint purchase={selectedPurchase} />
+          </div>
+        )}
+      </div>
     </Box>
   );
 };

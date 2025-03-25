@@ -1,0 +1,127 @@
+.bill-print {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .header {
+    display: flex;
+    margin-bottom: 20px;
+  }
+  
+  .company-info {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .company-name {
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+  
+  .bill-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 15px 0;
+    border: 1px solid #000;
+    padding: 5px;
+  }
+  
+  .info-grid {
+    display: flex;
+    margin-bottom: 20px;
+  }
+  
+  .info-section {
+    flex: 1;
+  }
+  
+  .info-table {
+    width: 100%;
+  }
+  
+  .info-table td {
+    padding: 3px;
+  }
+  
+  .info-table td:nth-child(2) {
+    width: 20px;
+    text-align: center;
+  }
+  
+  .party-details {
+    margin-bottom: 20px;
+  }
+  
+  .party-section {
+    border: 1px solid #000;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .party-section h3 {
+    margin-top: 0;
+    font-size: 16px;
+  }
+  
+  .party-table {
+    width: 100%;
+  }
+  
+  .party-table td {
+    padding: 3px;
+  }
+  
+  .party-table td:nth-child(2) {
+    width: 20px;
+    text-align: center;
+  }
+  
+  .items-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  
+  .items-table th, .items-table td {
+    border: 1px solid #000;
+    padding: 8px;
+    font-size: 14px;
+  }
+  
+  .items-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .items-table .empty-row td {
+    border: 1px solid #000;
+    height: 25px;
+  }
+  
+  .center {
+    text-align: center;
+  }
+  
+  .right {
+    text-align: right;
+  }
+  
+  .bold {
+    font-weight: bold;
+  }
+  
+  .payment-status {
+    margin-bottom: 20px;
+  }
+  
+  .payment-status h4 {
+    margin: 5px 0;
+  }
+  
+  .footer {
+    display: flex;
+    margin-top: 40px;
+  }
