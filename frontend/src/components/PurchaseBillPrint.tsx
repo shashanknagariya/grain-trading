@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatDate, formatCurrency } from '../utils/formatters';
 import { Purchase } from '../types/purchase';
-import './PurchaseBillPrint.css'; // You'll need to create this CSS file
+import '../components/PurchaseBillPrint.css'; // Import from components folder
 
 interface PurchaseBillPrintProps {
   purchase: Purchase | null;
