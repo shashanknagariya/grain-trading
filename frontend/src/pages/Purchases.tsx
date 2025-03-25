@@ -16,7 +16,7 @@ import {
   Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Edit as EditIcon, MoreVert as MoreVertIcon, Print as PrintIcon, Visibility as ViewIcon } from '@mui/icons-material';
+import { MoreVert as MoreVertIcon, Print as PrintIcon, Visibility as ViewIcon } from '@mui/icons-material';
 import { formatDate, formatCurrency } from '../utils/formatters';
 import { Purchase } from '../types/purchase';
 import { fetchPurchases } from '../services/api';
@@ -37,7 +37,7 @@ export const Purchases = () => {
 
   const handlePrint = useReactToPrint({
     content: () => printComponentRef.current,
-    documentTitle: `Purchase-${selectedPurchase?.bill_number || 'Bill'}`,
+    documentTitle: `${t('purchases.title')}-${selectedPurchase?.bill_number || ''}`,
     onAfterPrint: () => console.log('Printed successfully')
   });
 
@@ -96,14 +96,14 @@ export const Purchases = () => {
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">{t('purchases.title', 'Purchases')}</Typography>
+        <Typography variant="h4">{t('purchases.title')}</Typography>
         {user?.permissions.includes('make:purchase') && (
           <Button
             variant="contained"
             color="primary"
             onClick={handleCreatePurchase}
           >
-            {t('purchases.create', 'Create Purchase')}
+            {t('purchases.add_purchase')}
           </Button>
         )}
       </Box>
@@ -112,13 +112,13 @@ export const Purchases = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>{t('common.date', 'Date')}</TableCell>
-              <TableCell>{t('purchases.bill_number', 'Bill Number')}</TableCell>
-              <TableCell>{t('purchases.supplier', 'Supplier')}</TableCell>
-              <TableCell>{t('purchases.grain', 'Grain')}</TableCell>
-              <TableCell align="right">{t('common.total_amount', 'Total Amount')}</TableCell>
-              <TableCell>{t('common.payment_status', 'Payment Status')}</TableCell>
-              <TableCell>{t('common.actions', 'Actions')}</TableCell>
+              <TableCell>{t('purchases.purchase_date')}</TableCell>
+              <TableCell>{t('purchases.bill_number')}</TableCell>
+              <TableCell>{t('purchases.seller_name')}</TableCell>
+              <TableCell>{t('purchases.grain_name')}</TableCell>
+              <TableCell align="right">{t('purchases.total_amount')}</TableCell>
+              <TableCell>{t('purchases.payment_status')}</TableCell>
+              <TableCell>{t('common.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -127,13 +127,13 @@ export const Purchases = () => {
                 <TableCell>{formatDate(new Date(purchase.purchase_date))}</TableCell>
                 <TableCell>{purchase.bill_number}</TableCell>
                 <TableCell>{purchase.supplier_name}</TableCell>
-                <TableCell>{purchase.grain?.name}</TableCell>
+                <TableCell>{purchase.grain?.name || t('common.noData')}</TableCell>
                 <TableCell align="right">
                   {formatCurrency(purchase.total_amount)}
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={t(`common.payment_status_${purchase.payment_status}`, purchase.payment_status)}
+                    label={t(`purchases.${purchase.payment_status}`)}
                     color={getPaymentStatusColor(purchase.payment_status) as any}
                     size="small"
                   />
@@ -141,14 +141,6 @@ export const Purchases = () => {
                 <TableCell>
                   <IconButton onClick={(e) => handleOpenMenu(e, purchase)}>
                     <MoreVertIcon />
-                  </IconButton>
-                  {user?.permissions.includes('make:purchase') && (
-                    <IconButton onClick={() => navigate(`/purchases/${purchase.id}/edit`)}>
-                      <EditIcon />
-                    </IconButton>
-                  )}
-                  <IconButton onClick={() => navigate(`/purchases/${purchase.id}`)}>
-                    <ViewIcon />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -164,18 +156,18 @@ export const Purchases = () => {
       >
         <MenuItem onClick={() => handleMenuAction('print')}>
           <PrintIcon sx={{ mr: 1 }} />
-          {t('common.print', 'Print')}
+          {t('purchases.print_bill')}
         </MenuItem>
         <MenuItem onClick={() => handleMenuAction('details')}>
           <ViewIcon sx={{ mr: 1 }} />
-          {t('common.details', 'Details')}
+          {t('purchases.view_details')}
         </MenuItem>
       </Menu>
 
       {/* Hidden print component */}
       <div style={{ display: 'none' }}>
         <div ref={printComponentRef}>
-          <PurchaseBillPrint purchase={selectedPurchase} />
+          {selectedPurchase && <PurchaseBillPrint purchase={selectedPurchase} />}
         </div>
       </div>
     </Box>

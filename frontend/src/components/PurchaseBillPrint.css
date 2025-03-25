@@ -3,6 +3,7 @@
   font-family: Arial, sans-serif;
   max-width: 800px;
   margin: 0 auto;
+  background-color: white;
 }
 
 .header {
@@ -140,16 +141,26 @@
 }
 
 @media print {
-  .bill-print {
-    padding: 0;
+  body * {
+    visibility: hidden;
   }
-
-  body {
+  
+  .bill-print,
+  .bill-print * {
+    visibility: visible;
+  }
+  
+  .bill-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20mm;
     margin: 0;
-    padding: 0;
   }
 
   @page {
+    size: A4;
     margin: 20mm;
   }
 }

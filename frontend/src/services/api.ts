@@ -72,6 +72,7 @@ export const apiWithCache = {
 
 export const API_URL = process.env.VITE_API_URL || 'http://localhost:5000';
 
+// Update fetchPurchases to bypass cache to ensure fresh data
 export const fetchPurchases = async () => {
-  return await apiWithCache.get<Purchase[]>('/api/purchases');
+  return await apiWithCache.get<Purchase[]>('/api/purchases', { bypassCache: true });
 };
