@@ -8,6 +8,20 @@ const api = axios.create({
   timeout: 10000
 });
 
+// Add request interceptor for authentication
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 api.interceptors.response.use(
   response => response,
   error => Promise.reject(handleApiError(error))

@@ -25,7 +25,7 @@ def create_app():
     else:
         app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
     
-    # Update CORS configuration
+    # CORS configuration
     CORS(app, resources={
         r"/*": {
             "origins": [
@@ -36,7 +36,8 @@ def create_app():
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": True
+            "supports_credentials": True,
+            "expose_headers": ["Content-Type", "Authorization"]
         }
     })
     
@@ -44,28 +45,6 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grain_trading.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
-    @app.after_request
-    def after_request(response):
-        origin = request.headers.get('Origin')
-        allowed_origins = [
-            'http://localhost:5173',
-            'http://localhost:3000',
-            'https://bpmp.netlify.app',
-            'https://shashanknagariya.pythonanywhere.com'
-        ]
-        
-        if origin in allowed_origins:
-            response.headers.add('Access-Control-Allow-Origin', origin)
-            response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-            response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-            response.headers.add('Access-Control-Allow-Credentials', 'true')
-            
-            # Handle OPTIONS request
-            if request.method == 'OPTIONS':
-                return response
-
-        return response
-
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
