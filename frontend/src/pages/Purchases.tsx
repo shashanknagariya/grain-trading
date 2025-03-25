@@ -113,7 +113,7 @@ export const Purchases = () => {
           <TableHead>
             <TableRow>
               <TableCell>{t('purchases.purchase_date')}</TableCell>
-              <TableCell>{t('purchases.bill_number')}</TableCell>
+              <TableCell>{t('sales.bill_number')}</TableCell>
               <TableCell>{t('purchases.seller_name')}</TableCell>
               <TableCell>{t('purchases.grain_name')}</TableCell>
               <TableCell align="right">{t('purchases.total_amount')}</TableCell>
@@ -127,7 +127,7 @@ export const Purchases = () => {
                 <TableCell>{formatDate(new Date(purchase.purchase_date))}</TableCell>
                 <TableCell>{purchase.bill_number}</TableCell>
                 <TableCell>{purchase.supplier_name}</TableCell>
-                <TableCell>{purchase.grain?.name || t('common.noData')}</TableCell>
+                <TableCell>{purchase.grain?.name || '-'}</TableCell>
                 <TableCell align="right">
                   {formatCurrency(purchase.total_amount)}
                 </TableCell>

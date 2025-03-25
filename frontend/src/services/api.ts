@@ -72,7 +72,16 @@ export const apiWithCache = {
 
 export const API_URL = process.env.VITE_API_URL || 'http://localhost:5000';
 
-// Update fetchPurchases to bypass cache to ensure fresh data
+// Update fetchPurchases to include grain data and handle errors better
 export const fetchPurchases = async () => {
-  return await apiWithCache.get<Purchase[]>('/api/purchases', { bypassCache: true });
+  try {
+    const response = await api.get<Purchase[]>('/api/purchases');
+    return response.data.map(purchase => ({
+      ...purchase,
+      grain: purchase.grain || { id: purchase.grain_id, name: '' }
+    }));
+  } catch (error) {
+    console.error('Error fetching purchases:', error);
+    throw error;
+  }
 };
