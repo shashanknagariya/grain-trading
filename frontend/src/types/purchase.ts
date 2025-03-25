@@ -1,10 +1,14 @@
 export interface Purchase {
   id: number;
   purchase_date: string;
-  seller_name: string;
+  supplier_name: string;  // Changed from seller_name to match the component
   seller_gst?: string;
-  grain_name: string;
+  grain: {
+    id: number;
+    name: string;
+  };
   grain_id: number;
+  bill_number: string;  // Added this field
   number_of_bags: number;
   total_weight: number;
   rate_per_kg: number;
@@ -45,4 +49,4 @@ export interface PaymentHistory {
     description: string;
     payment_date: string;
     created_at: string;
-} 
+}

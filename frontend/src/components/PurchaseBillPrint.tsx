@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatDate, formatCurrency } from '../utils/formatters';
 import { Purchase } from '../types/purchase';
-import '../components/PurchaseBillPrint.css'; // Import from components folder
+import './PurchaseBillPrint.css';
 
 interface PurchaseBillPrintProps {
   purchase: Purchase | null;
@@ -74,7 +74,7 @@ export const PurchaseBillPrint: React.FC<PurchaseBillPrintProps> = ({ purchase }
               <tr>
                 <td>Name</td>
                 <td>:</td>
-                <td>{purchase.seller_name}</td>
+                <td>{purchase.supplier_name}</td>
               </tr>
               {purchase.seller_gst && (
                 <tr>
@@ -108,7 +108,7 @@ export const PurchaseBillPrint: React.FC<PurchaseBillPrintProps> = ({ purchase }
         <tbody>
           <tr>
             <td className="center">1</td>
-            <td>{purchase.grain_name}</td>
+            <td>{purchase.grain?.name}</td>
             <td className="center">1001</td>
             <td className="right">{purchase.total_weight ? `${purchase.total_weight.toFixed(1)} kg` : '-'}</td>
             <td className="right">{formatCurrency(purchase.rate_per_kg || 0)}</td>

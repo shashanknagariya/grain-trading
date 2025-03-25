@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { cacheManager } from '../utils/cacheStrategy';
 import { handleApiError } from '../utils/errorHandling';
+import { Purchase } from '../types/purchase';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -56,3 +57,7 @@ export const apiWithCache = {
 }; 
 
 export const API_URL = process.env.VITE_API_URL || 'http://localhost:5000';
+
+export const fetchPurchases = async () => {
+  return await apiWithCache.get<Purchase[]>('/api/purchases');
+};

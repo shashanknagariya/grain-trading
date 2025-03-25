@@ -1,165 +1,108 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Button,
+  Typography,
+  Box,
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Edit as EditIcon, Visibility as ViewIcon } from '@mui/icons-material';
 import { formatDate, formatCurrency } from '../utils/formatters';
 import { Purchase } from '../types/purchase';
-import '../components/PurchaseBillPrint.css'; // Import from components folder
+import { fetchPurchases } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
-interface PurchaseBillPrintProps {
-  purchase: Purchase | null;
-}
+export const Purchases = () => {
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-export const PurchaseBillPrint: React.FC<PurchaseBillPrintProps> = ({ purchase }) => {
-  if (!purchase) return null;
+  useEffect(() => {
+    const loadPurchases = async () => {
+      try {
+        const data = await fetchPurchases();
+        setPurchases(data);
+      } catch (error) {
+        console.error('Error loading purchases:', error);
+      }
+    };
+
+    loadPurchases();
+  }, []);
+
+  const handleView = (id: number) => {
+    navigate(`/purchases/${id}`);
+  };
+
+  const handleEdit = (id: number) => {
+    navigate(`/purchases/${id}/edit`);
+  };
+
+  const handleCreatePurchase = () => {
+    navigate('/purchases/create');
+  };
 
   return (
-    <div className="bill-print">
-      {/* Header */}
-      <div className="header">
-        <div className="company-info">
-          <h1 className="company-name">BADRI PRASAD MAHESH PRASAD NAGARIYA</h1>
-          <p>Ganj chhatarpur mp 471105</p>
-          <p>Contact: 7619595475</p>
-          <p>Email: nagariya.shashank7@gmail.com</p>
-          <p>GSTIN: 23AAXXXYYY8M1ZM</p>
-          <p>PAN No: AAXXXYYY</p>
-        </div>
-      </div>
+    <Box p={3}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h4">Purchases</Typography>
+        {user?.permissions.includes('make:purchase') && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleCreatePurchase}
+          >
+            Create Purchase
+          </Button>
+        )}
+      </Box>
 
-      <div className="bill-title">PURCHASE RECEIPT</div>
-
-      {/* Bill Info Grid */}
-      <div className="info-grid">
-        <div className="info-section">
-          <table className="info-table">
-            <tbody>
-              <tr>
-                <td>Purchase Date</td>
-                <td>:</td>
-                <td>{formatDate(new Date(purchase.purchase_date))}</td>
-              </tr>
-              <tr>
-                <td>Transportation Mode</td>
-                <td>:</td>
-                <td>{purchase.transportation_mode}</td>
-              </tr>
-              <tr>
-                <td>Vehicle Number</td>
-                <td>:</td>
-                <td>{purchase.vehicle_number}</td>
-              </tr>
-              {purchase.lr_number && (
-                <tr>
-                  <td>LR Number</td>
-                  <td>:</td>
-                  <td>{purchase.lr_number}</td>
-                </tr>
-              )}
-              {purchase.po_number && (
-                <tr>
-                  <td>PO Number</td>
-                  <td>:</td>
-                  <td>{purchase.po_number}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Supplier Details */}
-      <div className="party-details">
-        <div className="party-section">
-          <h3>Supplier Details:</h3>
-          <table className="party-table">
-            <tbody>
-              <tr>
-                <td>Name</td>
-                <td>:</td>
-                <td>{purchase.seller_name}</td>
-              </tr>
-              {purchase.seller_gst && (
-                <tr>
-                  <td>GSTIN</td>
-                  <td>:</td>
-                  <td>{purchase.seller_gst}</td>
-                </tr>
-              )}
-              <tr>
-                <td>Driver Name</td>
-                <td>:</td>
-                <td>{purchase.driver_name}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Items Table */}
-      <table className="items-table">
-        <thead>
-          <tr>
-            <th>Sr. No.</th>
-            <th>Description of Goods</th>
-            <th>HSN/SAC</th>
-            <th>Quantity</th>
-            <th>Rate</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="center">1</td>
-            <td>{purchase.grain_name}</td>
-            <td className="center">1001</td>
-            <td className="right">{purchase.total_weight ? `${purchase.total_weight.toFixed(1)} kg` : '-'}</td>
-            <td className="right">{formatCurrency(purchase.rate_per_kg || 0)}</td>
-            <td className="right">{formatCurrency(purchase.total_amount)}</td>
-          </tr>
-          {/* Empty rows for consistent look */}
-          {[...Array(4)].map((_, i) => (
-            <tr key={i} className="empty-row">
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={5} className="right bold">Total Amount</td>
-            <td className="right bold">{formatCurrency(purchase.total_amount)}</td>
-          </tr>
-        </tfoot>
-      </table>
-
-      {/* Additional Info */}
-      <div className="additional-info">
-        <table className="info-table">
-          <tbody>
-            <tr>
-              <td>Number of Bags</td>
-              <td>:</td>
-              <td>{purchase.number_of_bags}</td>
-            </tr>
-            <tr>
-              <td>Payment Status</td>
-              <td>:</td>
-              <td>{purchase.payment_status.toUpperCase()}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Footer */}
-      <div className="footer">
-        <div className="signature">
-          <p>For, BADRI PRASAD MAHESH PRASAD NAGARIYA</p>
-          <div className="signature-space"></div>
-          <p>Authorized Signatory</p>
-        </div>
-      </div>
-    </div>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Date</TableCell>
+              <TableCell>Bill Number</TableCell>
+              <TableCell>Supplier</TableCell>
+              <TableCell>Grain</TableCell>
+              <TableCell align="right">Total Amount</TableCell>
+              <TableCell>Payment Status</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {purchases.map((purchase) => (
+              <TableRow key={purchase.id}>
+                <TableCell>{formatDate(new Date(purchase.purchase_date))}</TableCell>
+                <TableCell>{purchase.bill_number}</TableCell>
+                <TableCell>{purchase.supplier_name}</TableCell>
+                <TableCell>{purchase.grain?.name}</TableCell>
+                <TableCell align="right">
+                  {formatCurrency(purchase.total_amount)}
+                </TableCell>
+                <TableCell>{purchase.payment_status}</TableCell>
+                <TableCell>
+                  <IconButton onClick={() => handleView(purchase.id)}>
+                    <ViewIcon />
+                  </IconButton>
+                  {user?.permissions.includes('make:purchase') && (
+                    <IconButton onClick={() => handleEdit(purchase.id)}>
+                      <EditIcon />
+                    </IconButton>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };

@@ -192,34 +192,34 @@ export const Users: FC = () => {
                 </TableRow>
               ) : (
                 users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.username}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <FormControl fullWidth>
-                        <Select
-                          value={user.role}
+                <TableRow key={user.id}>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <FormControl fullWidth>
+                      <Select
+                        value={user.role}
                           onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
-                          size="small"
-                          disabled={user.id === currentUser?.id}
-                        >
+                        size="small"
+                        disabled={user.id === currentUser?.id}
+                      >
                           {Object.values(USER_ROLES).map((role) => (
-                            <MenuItem key={role} value={role}>
-                              {role}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </TableCell>
+                          <MenuItem key={role} value={role}>
+                            {role}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
                     <TableCell align="right">
                       <IconButton 
                         onClick={() => handleOpenDialog(user)} 
-                        size="small"
+                            size="small"
                         disabled={user.id === currentUser?.id}
                       >
                         <EditIcon />
                       </IconButton>
-                      <IconButton 
+                      <IconButton
                         onClick={() => handleDelete(user.id)} 
                         size="small" 
                         color="error"
@@ -227,8 +227,8 @@ export const Users: FC = () => {
                       >
                         <DeleteIcon />
                       </IconButton>
-                    </TableCell>
-                  </TableRow>
+                  </TableCell>
+                </TableRow>
                 ))
               )}
             </TableBody>
@@ -299,4 +299,4 @@ export const Users: FC = () => {
       </Box>
     </PermissionGuard>
   );
-};
+}; 
