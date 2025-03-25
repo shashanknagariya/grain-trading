@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Table,
   TableBody,
@@ -11,18 +11,35 @@ import {
   Button,
   Typography,
   Box,
+  Menu,
+  MenuItem,
+  Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Edit as EditIcon, Visibility as ViewIcon } from '@mui/icons-material';
+import { Edit as EditIcon, MoreVert as MoreVertIcon, Print as PrintIcon, Visibility as ViewIcon } from '@mui/icons-material';
 import { formatDate, formatCurrency } from '../utils/formatters';
 import { Purchase } from '../types/purchase';
 import { fetchPurchases } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { PurchaseBillPrint } from '../components/PurchaseBillPrint';
+import { useReactToPrint } from 'react-to-print';
+import { useTranslation } from 'react-i18next';
 
 export const Purchases = () => {
+  const { t } = useTranslation();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedPurchaseId, setSelectedPurchaseId] = useState<number | null>(null);
+  const printComponentRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    content: () => printComponentRef.current,
+    documentTitle: `Purchase-${selectedPurchase?.bill_number || 'Bill'}`,
+    onAfterPrint: () => console.log('Printed successfully')
+  });
 
   useEffect(() => {
     const loadPurchases = async () => {
@@ -37,29 +54,56 @@ export const Purchases = () => {
     loadPurchases();
   }, []);
 
-  const handleView = (id: number) => {
-    navigate(`/purchases/${id}`);
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, purchase: Purchase) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedPurchaseId(purchase.id);
+    setSelectedPurchase(purchase);
   };
 
-  const handleEdit = (id: number) => {
-    navigate(`/purchases/${id}/edit`);
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+    setSelectedPurchaseId(null);
+  };
+
+  const handleMenuAction = (action: 'print' | 'details') => {
+    if (!selectedPurchaseId) return;
+
+    if (action === 'print') {
+      handlePrint();
+    } else {
+      navigate(`/purchases/${selectedPurchaseId}`);
+    }
+    handleCloseMenu();
   };
 
   const handleCreatePurchase = () => {
     navigate('/purchases/create');
   };
 
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return 'success';
+      case 'partial':
+        return 'warning';
+      case 'pending':
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Purchases</Typography>
+        <Typography variant="h4">{t('purchases.title', 'Purchases')}</Typography>
         {user?.permissions.includes('make:purchase') && (
           <Button
             variant="contained"
             color="primary"
             onClick={handleCreatePurchase}
           >
-            Create Purchase
+            {t('purchases.create', 'Create Purchase')}
           </Button>
         )}
       </Box>
@@ -68,13 +112,13 @@ export const Purchases = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell>Bill Number</TableCell>
-              <TableCell>Supplier</TableCell>
-              <TableCell>Grain</TableCell>
-              <TableCell align="right">Total Amount</TableCell>
-              <TableCell>Payment Status</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>{t('common.date', 'Date')}</TableCell>
+              <TableCell>{t('purchases.bill_number', 'Bill Number')}</TableCell>
+              <TableCell>{t('purchases.supplier', 'Supplier')}</TableCell>
+              <TableCell>{t('purchases.grain', 'Grain')}</TableCell>
+              <TableCell align="right">{t('common.total_amount', 'Total Amount')}</TableCell>
+              <TableCell>{t('common.payment_status', 'Payment Status')}</TableCell>
+              <TableCell>{t('common.actions', 'Actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -87,22 +131,53 @@ export const Purchases = () => {
                 <TableCell align="right">
                   {formatCurrency(purchase.total_amount)}
                 </TableCell>
-                <TableCell>{purchase.payment_status}</TableCell>
                 <TableCell>
-                  <IconButton onClick={() => handleView(purchase.id)}>
-                    <ViewIcon />
+                  <Chip
+                    label={t(`common.payment_status_${purchase.payment_status}`, purchase.payment_status)}
+                    color={getPaymentStatusColor(purchase.payment_status) as any}
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell>
+                  <IconButton onClick={(e) => handleOpenMenu(e, purchase)}>
+                    <MoreVertIcon />
                   </IconButton>
                   {user?.permissions.includes('make:purchase') && (
-                    <IconButton onClick={() => handleEdit(purchase.id)}>
+                    <IconButton onClick={() => navigate(`/purchases/${purchase.id}/edit`)}>
                       <EditIcon />
                     </IconButton>
                   )}
+                  <IconButton onClick={() => navigate(`/purchases/${purchase.id}`)}>
+                    <ViewIcon />
+                  </IconButton>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseMenu}
+      >
+        <MenuItem onClick={() => handleMenuAction('print')}>
+          <PrintIcon sx={{ mr: 1 }} />
+          {t('common.print', 'Print')}
+        </MenuItem>
+        <MenuItem onClick={() => handleMenuAction('details')}>
+          <ViewIcon sx={{ mr: 1 }} />
+          {t('common.details', 'Details')}
+        </MenuItem>
+      </Menu>
+
+      {/* Hidden print component */}
+      <div style={{ display: 'none' }}>
+        <div ref={printComponentRef}>
+          <PurchaseBillPrint purchase={selectedPurchase} />
+        </div>
+      </div>
     </Box>
   );
 };

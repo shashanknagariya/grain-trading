@@ -32,6 +32,11 @@ export const PurchaseBillPrint: React.FC<PurchaseBillPrintProps> = ({ purchase }
           <table className="info-table">
             <tbody>
               <tr>
+                <td>Bill Number</td>
+                <td>:</td>
+                <td>{purchase.bill_number}</td>
+              </tr>
+              <tr>
                 <td>Purchase Date</td>
                 <td>:</td>
                 <td>{formatDate(new Date(purchase.purchase_date))}</td>
@@ -99,49 +104,32 @@ export const PurchaseBillPrint: React.FC<PurchaseBillPrintProps> = ({ purchase }
           <tr>
             <th>Sr. No.</th>
             <th>Description of Goods</th>
-            <th>HSN/SAC</th>
-            <th>Quantity</th>
-            <th>Rate</th>
-            <th>Amount</th>
+            <th>No. of Bags</th>
+            <th>Total Weight (kg)</th>
+            <th>Rate (₹/kg)</th>
+            <th>Amount (₹)</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td className="center">1</td>
-            <td>{purchase.grain?.name}</td>
-            <td className="center">1001</td>
-            <td className="right">{purchase.total_weight ? `${purchase.total_weight.toFixed(1)} kg` : '-'}</td>
-            <td className="right">{formatCurrency(purchase.rate_per_kg || 0)}</td>
-            <td className="right">{formatCurrency(purchase.total_amount)}</td>
+            <td>1</td>
+            <td>{purchase.grain?.name || 'N/A'}</td>
+            <td>{purchase.number_of_bags}</td>
+            <td>{purchase.total_weight ? purchase.total_weight.toFixed(1) : '-'}</td>
+            <td>{formatCurrency(purchase.rate_per_kg || 0)}</td>
+            <td>{formatCurrency(purchase.total_amount)}</td>
           </tr>
-          {/* Empty rows for consistent look */}
-          {[...Array(4)].map((_, i) => (
-            <tr key={i} className="empty-row">
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-          ))}
         </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={5} className="right bold">Total Amount</td>
-            <td className="right bold">{formatCurrency(purchase.total_amount)}</td>
-          </tr>
-        </tfoot>
       </table>
 
-      {/* Additional Info */}
-      <div className="additional-info">
-        <table className="info-table">
+      {/* Total Section */}
+      <div className="total-section">
+        <table className="total-table">
           <tbody>
             <tr>
-              <td>Number of Bags</td>
+              <td>Total Amount</td>
               <td>:</td>
-              <td>{purchase.number_of_bags}</td>
+              <td>{formatCurrency(purchase.total_amount)}</td>
             </tr>
             <tr>
               <td>Payment Status</td>
@@ -154,10 +142,12 @@ export const PurchaseBillPrint: React.FC<PurchaseBillPrintProps> = ({ purchase }
 
       {/* Footer */}
       <div className="footer">
-        <div className="signature">
-          <p>For, BADRI PRASAD MAHESH PRASAD NAGARIYA</p>
-          <div className="signature-space"></div>
-          <p>Authorized Signatory</p>
+        <div className="signature-section">
+          <div className="signature">
+            <p>For, BADRI PRASAD MAHESH PRASAD NAGARIYA</p>
+            <div className="signature-space"></div>
+            <p>Authorized Signatory</p>
+          </div>
         </div>
       </div>
     </div>
