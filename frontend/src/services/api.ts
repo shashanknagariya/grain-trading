@@ -79,8 +79,13 @@ export const fetchPurchases = async () => {
     const response = await api.get<Purchase[]>('/api/purchases');
     return response.data.map(purchase => ({
       ...purchase,
-      // Ensure all required fields are present
+      // Ensure all required fields are present and properly formatted
       grain_name: decodeURIComponent(JSON.parse(`"${purchase.grain_name}"`)), // Handle Unicode characters
+      number_of_bags: typeof purchase.number_of_bags === 'number' ? purchase.number_of_bags : parseInt(purchase.number_of_bags as any) || 0,
+      weight_per_bag: typeof purchase.weight_per_bag === 'number' ? purchase.weight_per_bag : parseFloat(purchase.weight_per_bag as any) || 0,
+      extra_weight: typeof purchase.extra_weight === 'number' ? purchase.extra_weight : parseFloat(purchase.extra_weight as any) || 0,
+      total_weight: typeof purchase.total_weight === 'number' ? purchase.total_weight : parseFloat(purchase.total_weight as any) || 0,
+      rate_per_kg: typeof purchase.rate_per_kg === 'number' ? purchase.rate_per_kg : parseFloat(purchase.rate_per_kg as any) || 0,
       total_amount: typeof purchase.total_amount === 'number' ? purchase.total_amount : parseFloat(purchase.total_amount as any) || 0,
       paid_amount: typeof purchase.paid_amount === 'number' ? purchase.paid_amount : parseFloat(purchase.paid_amount as any) || 0,
       payment_status: purchase.payment_status || 'pending'
