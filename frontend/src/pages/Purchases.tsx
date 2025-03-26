@@ -318,9 +318,9 @@ export const Purchases: React.FC = () => {
                   <TableCell>{purchase.bill_number}</TableCell>
                   <TableCell>{formatDate(new Date(purchase.purchase_date))}</TableCell>
                   <TableCell>{purchase.supplier_name}</TableCell>
-                  <TableCell>{purchase.grain?.name}</TableCell>
-                  <TableCell align="right">{purchase.number_of_bags}</TableCell>
-                  <TableCell align="right">{purchase.total_weight}</TableCell>
+                  <TableCell>{purchase.grain?.name || ''}</TableCell>
+                  <TableCell align="right">{purchase.number_of_bags || 0}</TableCell>
+                  <TableCell align="right">{purchase.total_weight || 0}</TableCell>
                   <TableCell align="right">{formatCurrency(purchase.total_amount)}</TableCell>
                   <TableCell>
                     <Chip

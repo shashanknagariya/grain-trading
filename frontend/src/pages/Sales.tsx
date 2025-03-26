@@ -234,28 +234,31 @@ export const Sales: React.FC = () => {
 
   const filteredSales = React.useMemo(() => {
     return sales.filter((sale) => {
-      const matchBillNumber = sale.bill_number.toLowerCase().includes(filters.billNumber.toLowerCase());
-      const matchCustomerName = sale.customer_name.toLowerCase().includes(filters.customerName.toLowerCase());
-      const matchGrainName = !filters.grainName || sale.grain_name === filters.grainName;
+      if (!sale) return false;
       
-      const saleDate = new Date(sale.sale_date);
-      const matchStartDate = !filters.startDate || saleDate >= new Date(filters.startDate);
-      const matchEndDate = !filters.endDate || saleDate <= new Date(filters.endDate);
+      const billNumber = (sale.bill_number || '').toLowerCase();
+      const customerName = (sale.buyer_name || '').toLowerCase();
+      const searchBillNumber = (filters.billNumber || '').toLowerCase();
+      const searchCustomerName = (filters.customerName || '').toLowerCase();
       
-      const matchMinAmount = !filters.minAmount || sale.total_amount >= parseFloat(filters.minAmount);
-      const matchMaxAmount = !filters.maxAmount || sale.total_amount <= parseFloat(filters.maxAmount);
+      const matchBillNumber = billNumber.includes(searchBillNumber);
+      const matchCustomerName = customerName.includes(searchCustomerName);
+      const matchGrainName = !filters.grainName || sale.grain?.name === filters.grainName;
+      
+      const saleDate = sale.sale_date ? new Date(sale.sale_date) : null;
+      const matchStartDate = !filters.startDate || (saleDate && saleDate >= new Date(filters.startDate));
+      const matchEndDate = !filters.endDate || (saleDate && saleDate <= new Date(filters.endDate));
+      
+      const saleAmount = parseFloat(String(sale.total_amount)) || 0;
+      const minAmount = filters.minAmount ? parseFloat(filters.minAmount) : null;
+      const maxAmount = filters.maxAmount ? parseFloat(filters.maxAmount) : null;
+      
+      const matchMinAmount = !minAmount || saleAmount >= minAmount;
+      const matchMaxAmount = !maxAmount || saleAmount <= maxAmount;
       const matchPaymentStatus = !filters.paymentStatus || sale.payment_status === filters.paymentStatus;
 
-      return (
-        matchBillNumber &&
-        matchCustomerName &&
-        matchGrainName &&
-        matchStartDate &&
-        matchEndDate &&
-        matchMinAmount &&
-        matchMaxAmount &&
-        matchPaymentStatus
-      );
+      return matchBillNumber && matchCustomerName && matchGrainName && matchStartDate && 
+             matchEndDate && matchMinAmount && matchMaxAmount && matchPaymentStatus;
     });
   }, [sales, filters]);
 
