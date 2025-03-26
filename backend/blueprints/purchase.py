@@ -192,3 +192,92 @@ def delete_purchase(purchase_id):
         print(f"Error deleting purchase: {str(e)}")
         db.session.rollback()
         return jsonify({'error': 'Failed to delete purchase'}), 500 
+
+@purchase.route('/purchases/<int:purchase_id>', methods=['PUT'])
+@jwt_required()
+@require_permission(Permission.EDIT_PURCHASE)
+def update_purchase(purchase_id):
+    try:
+        data = request.get_json()
+        purchase = Purchase.query.get_or_404(purchase_id)
+        
+        # Begin transaction
+        db.session.begin_nested()
+        
+        try:
+            # Update basic fields
+            if 'supplier_name' in data:
+                purchase.supplier_name = data['supplier_name']
+            if 'purchase_date' in data:
+                purchase.purchase_date = datetime.fromisoformat(data['purchase_date'].replace('Z', '+00:00'))
+            
+            # Update quantity and amount related fields
+            if any(key in data for key in ['number_of_bags', 'weight_per_bag', 'rate_per_kg', 'extra_weight']):
+                # Get current values or new values from request
+                number_of_bags = data.get('number_of_bags', purchase.number_of_bags)
+                weight_per_bag = data.get('weight_per_bag', purchase.weight_per_bag)
+                rate_per_kg = data.get('rate_per_kg', purchase.rate_per_kg)
+                extra_weight = data.get('extra_weight', purchase.extra_weight)
+                
+                # Calculate new totals
+                total_weight = (number_of_bags * weight_per_bag) + extra_weight
+                total_amount = total_weight * rate_per_kg
+                
+                # Update purchase record
+                purchase.number_of_bags = number_of_bags
+                purchase.weight_per_bag = weight_per_bag
+                purchase.rate_per_kg = rate_per_kg
+                purchase.extra_weight = extra_weight
+                purchase.total_weight = total_weight
+                purchase.total_amount = total_amount
+            
+            # Update inventory if godown changed
+            if 'godown_id' in data and data['godown_id'] != purchase.godown_id:
+                # Remove bags from old godown
+                old_inventory = BagInventory.query.filter_by(
+                    grain_id=purchase.grain_id,
+                    godown_id=purchase.godown_id
+                ).with_for_update().first()
+                
+                if old_inventory:
+                    old_inventory.number_of_bags -= purchase.number_of_bags
+                    
+                # Add bags to new godown
+                new_inventory = BagInventory.query.filter_by(
+                    grain_id=purchase.grain_id,
+                    godown_id=data['godown_id']
+                ).with_for_update().first()
+                
+                if not new_inventory:
+                    new_inventory = BagInventory(
+                        grain_id=purchase.grain_id,
+                        godown_id=data['godown_id'],
+                        number_of_bags=0
+                    )
+                    db.session.add(new_inventory)
+                
+                new_inventory.number_of_bags += purchase.number_of_bags
+                purchase.godown_id = data['godown_id']
+            
+            db.session.commit()
+            return jsonify({
+                'message': 'Purchase updated successfully',
+                'purchase': {
+                    'id': purchase.id,
+                    'bill_number': purchase.bill_number,
+                    'grain_name': purchase.grain.name,
+                    'supplier_name': purchase.supplier_name,
+                    'total_amount': float(purchase.total_amount),
+                    'payment_status': purchase.payment_status,
+                    'paid_amount': float(purchase.paid_amount),
+                    'purchase_date': purchase.purchase_date.isoformat()
+                }
+            })
+            
+        except Exception as e:
+            db.session.rollback()
+            raise e
+            
+    except Exception as e:
+        print(f"Error updating purchase: {str(e)}")
+        return jsonify({'error': str(e)}), 500

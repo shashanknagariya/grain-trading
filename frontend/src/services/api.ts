@@ -2,6 +2,7 @@ import axios from 'axios';
 import { cacheManager } from '../utils/cacheStrategy';
 import { handleApiError } from '../utils/errorHandling';
 import { Purchase } from '../types/purchase';
+import { Sale } from '../types/sale'; // Added import for Sale type
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -84,4 +85,40 @@ export const fetchPurchases = async () => {
     console.error('Error fetching purchases:', error);
     throw error;
   }
+};
+
+// Purchase API functions
+export const updatePurchase = async (id: number, data: Partial<Purchase>): Promise<Purchase> => {
+  const response = await api.put<Purchase>(`/api/purchases/${id}`, data);
+  return response.data;
+};
+
+export const deletePurchase = async (id: number) => {
+  try {
+    const response = await api.delete<{ message: string }>(`/api/purchases/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting purchase:', error);
+    throw error;
+  }
+};
+
+// Sales API functions
+export const getSales = async (): Promise<Sale[]> => {
+  const response = await api.get<Sale[]>('/api/sales');
+  return response.data;
+};
+
+export const createSale = async (data: Partial<Sale>): Promise<Sale> => {
+  const response = await api.post<Sale>('/api/sales', data);
+  return response.data;
+};
+
+export const updateSale = async (id: number, data: Partial<Sale>): Promise<Sale> => {
+  const response = await api.put<Sale>(`/api/sales/${id}`, data);
+  return response.data;
+};
+
+export const deleteSale = async (id: number): Promise<void> => {
+  await api.delete(`/api/sales/${id}`);
 };

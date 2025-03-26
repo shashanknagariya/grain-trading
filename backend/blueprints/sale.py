@@ -169,6 +169,149 @@ def get_sale(sale_id):
         'payment_status': sale.payment_status
     }) 
 
+@sale.route('/sales/<int:sale_id>', methods=['PUT'])
+@jwt_required()
+def update_sale(sale_id):
+    try:
+        data = request.get_json()
+        sale = Sale.query.get_or_404(sale_id)
+        
+        # Begin transaction
+        db.session.begin_nested()
+        
+        try:
+            # Update basic fields
+            if 'buyer_name' in data:
+                sale.buyer_name = data['buyer_name']
+            if 'sale_date' in data:
+                sale.sale_date = datetime.fromisoformat(data['sale_date'].replace('Z', '+00:00'))
+            if 'transportation_mode' in data:
+                sale.transportation_mode = data['transportation_mode']
+            if 'vehicle_number' in data:
+                sale.vehicle_number = data['vehicle_number']
+            if 'driver_name' in data:
+                sale.driver_name = data['driver_name']
+            
+            # Update quantity and amount related fields
+            if any(key in data for key in ['number_of_bags', 'total_weight', 'rate_per_kg']):
+                # Get current values or new values from request
+                number_of_bags = data.get('number_of_bags', sale.number_of_bags)
+                total_weight = data.get('total_weight', sale.total_weight)
+                rate_per_kg = data.get('rate_per_kg', sale.rate_per_kg)
+                
+                # Calculate new total amount
+                total_amount = total_weight * rate_per_kg
+                
+                # Get the difference in bags
+                bags_difference = number_of_bags - sale.number_of_bags
+                
+                # Update inventory in godowns if number of bags changed
+                if bags_difference != 0:
+                    # Update existing godown details
+                    for godown_detail in data.get('godown_details', []):
+                        inventory = BagInventory.query.filter_by(
+                            grain_id=sale.grain_id,
+                            godown_id=godown_detail['godown_id']
+                        ).with_for_update().first()
+                        
+                        if not inventory:
+                            raise ValueError(f'No inventory found in godown {godown_detail["godown_id"]}')
+                        
+                        new_bags = int(godown_detail['number_of_bags'])
+                        old_detail = SaleGodownDetail.query.filter_by(
+                            sale_id=sale.id,
+                            godown_id=godown_detail['godown_id']
+                        ).first()
+                        
+                        # Calculate the difference for this godown
+                        godown_difference = new_bags - (old_detail.number_of_bags if old_detail else 0)
+                        
+                        # Check if we have enough inventory
+                        if inventory.number_of_bags < godown_difference:
+                            raise ValueError(
+                                f'Insufficient stock in godown {godown_detail["godown_id"]}. '
+                                f'Available: {inventory.number_of_bags}, Required: {godown_difference}'
+                            )
+                        
+                        # Update inventory
+                        inventory.number_of_bags -= godown_difference
+                        
+                        # Update or create sale godown detail
+                        if old_detail:
+                            old_detail.number_of_bags = new_bags
+                        else:
+                            new_detail = SaleGodownDetail(
+                                sale_id=sale.id,
+                                godown_id=godown_detail['godown_id'],
+                                number_of_bags=new_bags
+                            )
+                            db.session.add(new_detail)
+                
+                # Update sale record
+                sale.number_of_bags = number_of_bags
+                sale.total_weight = total_weight
+                sale.rate_per_kg = rate_per_kg
+                sale.total_amount = total_amount
+            
+            db.session.commit()
+            return jsonify({
+                'message': 'Sale updated successfully',
+                'sale': {
+                    'id': sale.id,
+                    'bill_number': sale.bill_number,
+                    'grain_name': sale.grain.name,
+                    'buyer_name': sale.buyer_name,
+                    'number_of_bags': sale.number_of_bags,
+                    'total_weight': sale.total_weight,
+                    'rate_per_kg': sale.rate_per_kg,
+                    'total_amount': sale.total_amount,
+                    'sale_date': sale.sale_date.isoformat(),
+                    'payment_status': sale.payment_status
+                }
+            })
+            
+        except Exception as e:
+            db.session.rollback()
+            raise e
+            
+    except Exception as e:
+        print(f"Error updating sale: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@sale.route('/sales/<int:sale_id>', methods=['DELETE'])
+@jwt_required()
+def delete_sale(sale_id):
+    try:
+        sale = Sale.query.get_or_404(sale_id)
+        
+        # Begin transaction
+        db.session.begin_nested()
+        
+        try:
+            # Return bags to inventory
+            for detail in sale.godown_details:
+                inventory = BagInventory.query.filter_by(
+                    grain_id=sale.grain_id,
+                    godown_id=detail.godown_id
+                ).with_for_update().first()
+                
+                if inventory:
+                    inventory.number_of_bags += detail.number_of_bags
+            
+            # Delete sale and its details
+            db.session.delete(sale)
+            db.session.commit()
+            
+            return jsonify({'message': 'Sale deleted successfully'})
+            
+        except Exception as e:
+            db.session.rollback()
+            raise e
+            
+    except Exception as e:
+        print(f"Error deleting sale: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 @sale.route('/sales/<int:sale_id>/payment-status', methods=['PUT'])
 @jwt_required()
 def update_payment_status(sale_id):

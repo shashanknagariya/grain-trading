@@ -10,6 +10,8 @@ export interface Purchase {
   grain_id: number;
   bill_number: string;  // Added this field
   number_of_bags: number;
+  weight_per_bag: number;
+  extra_weight?: number;
   total_weight: number;
   rate_per_kg: number;
   total_amount: number;
