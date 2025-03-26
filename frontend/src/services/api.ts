@@ -73,23 +73,18 @@ export const apiWithCache = {
 
 export const API_URL = process.env.VITE_API_URL || 'http://localhost:5000';
 
-// Update fetchPurchases to include grain data and handle errors better
+// Update fetchPurchases to handle the actual API response format
 export const fetchPurchases = async () => {
   try {
     const response = await api.get<Purchase[]>('/api/purchases');
-    return response.data.map(purchase => {
-      // Ensure all required fields are present with their correct types
-      return {
-        ...purchase,
-        number_of_bags: typeof purchase.number_of_bags === 'number' ? purchase.number_of_bags : parseInt(purchase.number_of_bags as any) || 0,
-        total_weight: typeof purchase.total_weight === 'number' ? purchase.total_weight : parseFloat(purchase.total_weight as any) || 0,
-        total_amount: typeof purchase.total_amount === 'number' ? purchase.total_amount : parseFloat(purchase.total_amount as any) || 0,
-        grain: {
-          id: purchase.grain_id,
-          name: (purchase.grain && 'name' in purchase.grain) ? purchase.grain.name : ''
-        }
-      };
-    });
+    return response.data.map(purchase => ({
+      ...purchase,
+      // Ensure all required fields are present
+      grain_name: decodeURIComponent(JSON.parse(`"${purchase.grain_name}"`)), // Handle Unicode characters
+      total_amount: typeof purchase.total_amount === 'number' ? purchase.total_amount : parseFloat(purchase.total_amount as any) || 0,
+      paid_amount: typeof purchase.paid_amount === 'number' ? purchase.paid_amount : parseFloat(purchase.paid_amount as any) || 0,
+      payment_status: purchase.payment_status || 'pending'
+    }));
   } catch (error) {
     console.error('Error fetching purchases:', error);
     throw error;

@@ -140,7 +140,7 @@ export const Purchases: React.FC = () => {
     return purchases.filter((purchase) => {
       const matchBillNumber = purchase.bill_number.toLowerCase().includes(filters.billNumber.toLowerCase());
       const matchSellerName = purchase.supplier_name.toLowerCase().includes(filters.sellerName.toLowerCase());
-      const matchGrainName = !filters.grainName || purchase.grain?.name === filters.grainName;
+      const matchGrainName = !filters.grainName || purchase.grain_name === filters.grainName;
       
       const purchaseDate = new Date(purchase.purchase_date);
       const matchStartDate = !filters.startDate || purchaseDate >= new Date(filters.startDate);
@@ -164,7 +164,7 @@ export const Purchases: React.FC = () => {
   }, [purchases, filters]);
 
   const uniqueGrains = React.useMemo(() => {
-    const grains = new Set(purchases.map((p) => p.grain?.name));
+    const grains = new Set(purchases.map((p) => p.grain_name));
     return Array.from(grains).filter(Boolean).map((grain) => ({
       value: grain as string,
       label: grain as string,
@@ -318,9 +318,9 @@ export const Purchases: React.FC = () => {
                   <TableCell>{purchase.bill_number}</TableCell>
                   <TableCell>{formatDate(new Date(purchase.purchase_date))}</TableCell>
                   <TableCell>{purchase.supplier_name}</TableCell>
-                  <TableCell>{purchase.grain?.name}</TableCell>
-                  <TableCell align="right">{purchase.number_of_bags.toLocaleString()}</TableCell>
-                  <TableCell align="right">{purchase.total_weight.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kg</TableCell>
+                  <TableCell>{purchase.grain_name}</TableCell>
+                  <TableCell align="right">-</TableCell>
+                  <TableCell align="right">-</TableCell>
                   <TableCell align="right">{formatCurrency(purchase.total_amount)}</TableCell>
                   <TableCell>
                     <Chip

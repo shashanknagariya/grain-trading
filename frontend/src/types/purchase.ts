@@ -1,28 +1,30 @@
 export interface Purchase {
   id: number;
   purchase_date: string;
-  supplier_name: string;  // Changed from seller_name to match the component
+  supplier_name: string;
   seller_gst?: string;
-  grain: {
+  grain_name: string;  // Added this field
+  grain?: {
     id: number;
     name: string;
   };
-  grain_id: number;
-  bill_number: string;  // Added this field
-  number_of_bags: number;
-  weight_per_bag: number;
+  grain_id?: number;
+  bill_number: string;
+  number_of_bags?: number;
+  weight_per_bag?: number;
   extra_weight?: number;
-  total_weight: number;
-  rate_per_kg: number;
+  total_weight?: number;
+  rate_per_kg?: number;
   total_amount: number;
+  paid_amount: number;
   payment_status: 'paid' | 'pending' | 'partial';
-  transportation_mode: string;
-  vehicle_number: string;
-  driver_name: string;
+  transportation_mode?: string;
+  vehicle_number?: string;
+  driver_name?: string;
   lr_number?: string;
   po_number?: string;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface PurchaseDetail {
