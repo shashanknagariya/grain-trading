@@ -25,10 +25,12 @@ def update_user_role(user_id):
     data = request.get_json()
     user = User.query.get_or_404(user_id)
     
-    if data['role'] not in [role.value for role in Role]:
-        return jsonify({'error': 'Invalid role'}), 400
+    # Convert role to lowercase for validation
+    role = data['role'].lower()
+    if role not in [r.value.lower() for r in Role]:
+        return jsonify({'error': f'Invalid role. Must be one of: {", ".join([r.value for r in Role])}'}), 400
     
-    user.role = data['role']
+    user.role = role
     db.session.commit()
     
     return jsonify({

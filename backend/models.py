@@ -60,7 +60,7 @@ class User(db.Model):
     
     @property
     def permissions(self):
-        return ROLE_PERMISSIONS.get(self.role, [])
+        return ROLE_PERMISSIONS.get(Role(self.role.lower()), [])
     
     def has_permission(self, permission):
         return permission in self.permissions

@@ -33,9 +33,9 @@ import { PermissionGuard } from '../components/PermissionGuard';
 import { useNotification } from '../contexts/NotificationContext';
 
 const USER_ROLES = {
-  ADMIN: 'ADMIN',
-  MANAGER: 'MANAGER',
-  STAFF: 'STAFF'
+  ADMIN: 'admin',
+  MANAGER: 'manager',
+  STAFF: 'staff'
 } as const;
 
 type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];

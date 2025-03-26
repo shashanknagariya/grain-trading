@@ -275,7 +275,7 @@ export const Purchases: React.FC = () => {
                       size="small"
                     />
                   </TableCell>
-                  <TableCell>{formatDate(purchase.purchase_date)}</TableCell>
+                  <TableCell>{purchase.purchase_date ? formatDate(new Date(purchase.purchase_date)) : ''}</TableCell>
                   <TableCell align="right">
                     <IconButton onClick={(e) => handleOpenMenu(e, purchase)}>
                       <MoreVertIcon />
