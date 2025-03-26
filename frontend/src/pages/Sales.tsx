@@ -243,7 +243,7 @@ export const Sales: React.FC = () => {
       
       const matchBillNumber = billNumber.includes(searchBillNumber);
       const matchCustomerName = customerName.includes(searchCustomerName);
-      const matchGrainName = !filters.grainName || sale.grain?.name === filters.grainName;
+      const matchGrainName = !filters.grainName || sale.grain_name === filters.grainName;
       
       const saleDate = sale.sale_date ? new Date(sale.sale_date) : null;
       const matchStartDate = !filters.startDate || (saleDate && saleDate >= new Date(filters.startDate));
