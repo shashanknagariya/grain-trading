@@ -131,3 +131,6 @@ export const updateSale = async (id: number, data: Partial<Sale>): Promise<Sale>
 export const deleteSale = async (id: number): Promise<void> => {
   await api.delete(`/api/sales/${id}`);
 };
+
+// Export the api instance
+export { api };

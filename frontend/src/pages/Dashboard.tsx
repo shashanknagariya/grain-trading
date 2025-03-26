@@ -1,209 +1,113 @@
-import React, { useEffect, useState } from 'react';
-import { Grid, Paper, Typography, Box } from '@mui/material';
-import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import React from 'react';
+import { Grid, Paper, Typography, Box, CircularProgress } from '@mui/material';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { DashboardCard } from '../components/DashboardCard';
-import { DashboardChart } from '../components/DashboardChart';
 import { useTranslation } from 'react-i18next';
-import { DashboardMetrics, DashboardChartData } from '../types/dashboard';
+import { formatCurrency } from '../utils/formatters';
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { 
-    metrics, 
-    chartData, 
-    isLoading,
-    error 
-  } = useDashboardData();
+  const { metrics, isLoading, error } = useDashboardData();
 
-  const [loading, setLoading] = useState(true);
-  const [showError, setShowError] = useState<string | null>(null);
-
-  const [metricsState, setMetrics] = useState({
-    totalPurchases: 0,
-    totalSales: 0,
-    totalInventory: 0,
-    totalRevenue: 0,
-    recentPurchases: [],
-    recentSales: [],
-    inventorySummary: []
-  });
-
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        setLoading(true);
-        
-        // Check if the metrics endpoint exists
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/metrics`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        // If the endpoint doesn't exist, use mock data instead of crashing
-        if (response.status === 404) {
-          console.warn('Metrics API not found, using mock data');
-          
-          // Set mock data for development
-          setMetrics({
-            totalPurchases: 0,
-            totalSales: 0,
-            totalInventory: 0,
-            totalRevenue: 0,
-            recentPurchases: [],
-            recentSales: [],
-            inventorySummary: []
-          });
-          return;
-        }
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch metrics: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Metrics data:', data);
-        
-        setMetrics({
-          totalPurchases: data.total_purchases || 0,
-          totalSales: data.total_sales || 0,
-          totalInventory: data.total_inventory || 0,
-          totalRevenue: data.total_revenue || 0,
-          recentPurchases: data.recent_purchases || [],
-          recentSales: data.recent_sales || [],
-          inventorySummary: data.inventory_summary || []
-        });
-      } catch (error) {
-        console.error('Error fetching metrics:', error);
-        // Don't crash, just show empty data
-        setMetrics({
-          totalPurchases: 0,
-          totalSales: 0,
-          totalInventory: 0,
-          totalRevenue: 0,
-          recentPurchases: [],
-          recentSales: [],
-          inventorySummary: []
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchMetrics();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <Box sx={{ p: 2 }}>
-        <Typography>{t('common.loading')}</Typography>
-        <LoadingSkeleton variant="card" count={3} />
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
       </Box>
     );
   }
 
-  if (showError) {
+  if (error) {
     return (
-      <Box sx={{ p: 2 }}>
-        <Typography color="error">
-          {t('errors.server_error')}: {showError}
-        </Typography>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <Typography color="error">{error}</Typography>
       </Box>
     );
   }
 
   if (!metrics) {
     return (
-      <Box sx={{ p: 2 }}>
-        <Typography color="error">
-          {t('errors.fetch_error')}
-        </Typography>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <Typography>{t('common.noData')}</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ flexGrow: 1, p: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        {t('dashboard.title')}
-      </Typography>
-
+    <Box p={3}>
       <Grid container spacing={3}>
-        {/* Metrics Overview */}
-        <Grid item xs={12}>
+        {/* Summary Cards */}
+        <Grid item xs={12} sm={6} md={3}>
+          <DashboardCard
+            title={t('dashboard.totalPurchases')}
+            value={formatCurrency(metrics.totalPurchases)}
+            color="#4caf50"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <DashboardCard
+            title={t('dashboard.totalSales')}
+            value={formatCurrency(metrics.totalSales)}
+            color="#2196f3"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <DashboardCard
+            title={t('dashboard.totalInventory')}
+            value={metrics.totalInventory.toLocaleString()}
+            color="#ff9800"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <DashboardCard
+            title={t('dashboard.totalRevenue')}
+            value={formatCurrency(metrics.totalRevenue)}
+            color="#e91e63"
+          />
+        </Grid>
+
+        {/* Recent Activity */}
+        <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              {t('dashboard.metrics.title')}
+              {t('dashboard.recentPurchases')}
             </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard 
-                  title={t('dashboard.total_purchases')} 
-                  value={metrics.totalPurchases} 
-                  type="currency" 
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  title={t('dashboard.metrics.totalRevenue')}
-                  value={metrics.totalRevenue}
-                  type="currency"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  title={t('dashboard.metrics.totalExpenses')}
-                  value={metrics.totalExpenses}
-                  type="currency"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  title={t('dashboard.metrics.netProfit')}
-                  value={metrics.netProfit}
-                  type="currency"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  title={t('dashboard.metrics.pendingPayments')}
-                  value={metrics.pendingPayments}
-                  type="currency"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  title={t('dashboard.metrics.activeGrains')}
-                  value={metrics.activeGrains}
-                  type="number"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  title={t('dashboard.metrics.totalGodowns')}
-                  value={metrics.totalGodowns}
-                  type="number"
-                />
-              </Grid>
-            </Grid>
+            {metrics.recentPurchases.length === 0 ? (
+              <Typography color="textSecondary">{t('common.noData')}</Typography>
+            ) : (
+              metrics.recentPurchases.map((purchase) => (
+                <Box key={purchase.id} sx={{ mb: 2 }}>
+                  <Typography variant="subtitle1">
+                    {purchase.billNumber} - {purchase.supplierName}
+                  </Typography>
+                  <Typography color="textSecondary">
+                    {formatCurrency(purchase.amount)} • {new Date(purchase.date).toLocaleDateString()}
+                  </Typography>
+                </Box>
+              ))
+            )}
           </Paper>
         </Grid>
 
-        {/* Monthly Chart */}
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              {t('dashboard.chart.title')}
+              {t('dashboard.recentSales')}
             </Typography>
-            <DashboardChart 
-              data={chartData} 
-              labels={{
-                sales: t('dashboard.chart.sales'),
-                purchases: t('dashboard.chart.purchases'),
-                profit: t('dashboard.chart.profit')
-              }}
-            />
+            {metrics.recentSales.length === 0 ? (
+              <Typography color="textSecondary">{t('common.noData')}</Typography>
+            ) : (
+              metrics.recentSales.map((sale) => (
+                <Box key={sale.id} sx={{ mb: 2 }}>
+                  <Typography variant="subtitle1">
+                    {sale.billNumber} - {sale.buyerName}
+                  </Typography>
+                  <Typography color="textSecondary">
+                    {formatCurrency(sale.amount)} • {new Date(sale.date).toLocaleDateString()}
+                  </Typography>
+                </Box>
+              ))
+            )}
           </Paper>
         </Grid>
       </Grid>

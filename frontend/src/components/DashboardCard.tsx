@@ -1,43 +1,23 @@
 import React from 'react';
-import { Card, CardContent, Typography } from '@mui/material';
-import { formatCurrency } from '../utils/formatters';
-import { CardType } from '../types/dashboard';
+import { Paper, Typography, Box } from '@mui/material';
 
 export interface DashboardCardProps {
   title: string;
-  value: number | null;
-  type: CardType;
+  value: string;
+  color?: string;
 }
 
-export const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, type }) => {
-  const formatValue = (value: number | null, type: CardType) => {
-    if (value === null || value === undefined) {
-      return '-';
-    }
-
-    switch (type) {
-      case 'currency':
-        return formatCurrency(value);
-      case 'number':
-      case 'sale':
-      case 'purchase':
-      case 'user':
-        return value.toLocaleString();
-      default:
-        return value.toString();
-    }
-  };
-
+export const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, color = '#1976d2' }) => {
   return (
-    <Card>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
+    <Paper elevation={2} sx={{ p: 2 }}>
+      <Box>
+        <Typography variant="subtitle2" color="textSecondary" gutterBottom>
           {title}
         </Typography>
-        <Typography variant="h4">
-          {formatValue(value, type)}
+        <Typography variant="h5" sx={{ color }}>
+          {value}
         </Typography>
-      </CardContent>
-    </Card>
+      </Box>
+    </Paper>
   );
 };

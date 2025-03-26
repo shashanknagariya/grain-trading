@@ -12,6 +12,7 @@ from blueprints.sale import sale
 from blueprints.users import users
 from blueprints.godown import godown
 from blueprints.payment import payment
+from blueprints.metrics import metrics
 from commands import init_commands, create_admin
 
 def create_app():
@@ -64,6 +65,7 @@ def create_app():
         (users, '/api'),  # This will handle /api/users/*
         (godown, '/api'),  # This will handle /api/godowns/*
         (payment, '/api'),  # This will handle /api/payments/*
+        (metrics, '/api'),  # This will handle /api/metrics/*
     ]
     
     for blueprint, prefix in blueprints:

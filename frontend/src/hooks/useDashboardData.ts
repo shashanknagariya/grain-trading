@@ -1,36 +1,46 @@
 import { useState, useEffect } from 'react';
-import { DashboardMetrics, DashboardChartData } from '../types/dashboard';
+import { api } from '../services/api';
 
-interface DashboardData {
-  metrics: DashboardMetrics;
-  chartData: DashboardChartData;
+export interface DashboardData {
+  totalPurchases: number;
+  totalSales: number;
+  totalInventory: number;
+  totalRevenue: number;
+  recentPurchases: Array<{
+    id: number;
+    billNumber: string;
+    supplierName: string;
+    amount: number;
+    date: string;
+  }>;
+  recentSales: Array<{
+    id: number;
+    billNumber: string;
+    buyerName: string;
+    amount: number;
+    date: string;
+  }>;
+  inventorySummary: Array<{
+    grainId: number;
+    totalBags: number;
+  }>;
 }
 
 export const useDashboardData = () => {
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [chartData, setChartData] = useState<DashboardChartData | null>(null);
+  const [metrics, setMetrics] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/dashboard/metrics`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data');
-        }
-
-        const data: DashboardData = await response.json();
-        setMetrics(data.metrics);
-        setChartData(data.chartData);
+        setIsLoading(true);
+        const response = await api.get<DashboardData>('/api/metrics');
+        setMetrics(response.data);
+        setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch dashboard data'));
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data');
       } finally {
         setIsLoading(false);
       }
@@ -39,5 +49,5 @@ export const useDashboardData = () => {
     fetchDashboardData();
   }, []);
 
-  return { metrics, chartData, isLoading, error };
+  return { metrics, isLoading, error };
 };
