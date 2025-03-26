@@ -198,14 +198,14 @@ export const Purchases: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <SelectFilter
-                label={t('purchases.payment_status')}
+                label={t('common.payment_status')}
                 value={filters.paymentStatus}
                 onChange={(value) => handleFilterChange('paymentStatus', value)}
                 options={[
                   { value: '', label: t('common.all') },
-                  { value: 'pending', label: t('purchases.status.pending') },
-                  { value: 'partial', label: t('purchases.status.partial') },
-                  { value: 'paid', label: t('purchases.status.paid') }
+                  { value: 'pending', label: t('common.payment_status.pending') },
+                  { value: 'partial', label: t('common.payment_status.partial') },
+                  { value: 'paid', label: t('common.payment_status.paid') }
                 ]}
               />
             </Grid>
@@ -248,7 +248,7 @@ export const Purchases: React.FC = () => {
                 <TableCell align="right">{t('purchases.number_of_bags')}</TableCell>
                 <TableCell align="right">{t('purchases.total_weight')}</TableCell>
                 <TableCell align="right">{t('purchases.total_amount')}</TableCell>
-                <TableCell>{t('purchases.payment_status')}</TableCell>
+                <TableCell>{t('common.payment_status')}</TableCell>
                 <TableCell>{t('purchases.purchase_date')}</TableCell>
                 <TableCell align="right">{t('common.actions')}</TableCell>
               </TableRow>
@@ -264,7 +264,7 @@ export const Purchases: React.FC = () => {
                   <TableCell align="right">{formatCurrency(purchase.total_amount)}</TableCell>
                   <TableCell>
                     <Chip
-                      label={t(`purchases.status.${purchase.payment_status}`)}
+                      label={t(`common.payment_status.${purchase.payment_status}`)}
                       color={
                         purchase.payment_status === 'paid'
                           ? 'success'

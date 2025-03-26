@@ -68,7 +68,7 @@ def create_sale():
             data['total_weight'] = float(data['total_weight'])
             data['rate_per_kg'] = float(data['rate_per_kg'])
             
-            # Check inventory in each godown
+            # Check and update inventory in each godown
             for godown_detail in data['godown_details']:
                 godown_detail['number_of_bags'] = int(godown_detail['number_of_bags'])
                 inventory = BagInventory.query.filter_by(
@@ -84,6 +84,9 @@ def create_sale():
                         f'Insufficient stock in godown {godown_detail["godown_id"]}. '
                         f'Available: {inventory.number_of_bags}, Requested: {godown_detail["number_of_bags"]}'
                     )
+                
+                # Deduct bags from inventory
+                inventory.number_of_bags -= godown_detail['number_of_bags']
 
             # Calculate total amount
             total_amount = data['total_weight'] * data['rate_per_kg']
@@ -103,46 +106,36 @@ def create_sale():
                 lr_number=data.get('lr_number'),
                 po_number=data.get('po_number'),
                 buyer_gst=data.get('buyer_gst'),
-                sale_date=datetime.now()
+                sale_date=datetime.now(),
+                payment_status='pending'
             )
             
-            # Add and flush to get the sale_id
             db.session.add(sale)
-            db.session.flush()  # This generates the sale_id
             
-            # Now create godown details with the sale_id
+            # Create sale godown details
             for godown_detail in data['godown_details']:
-                # Create sale godown detail
-                sale_godown = SaleGodownDetail(
-                    sale_id=sale.id,  # Now we have the sale_id
+                detail = SaleGodownDetail(
+                    sale=sale,
                     godown_id=godown_detail['godown_id'],
                     number_of_bags=godown_detail['number_of_bags']
                 )
-                db.session.add(sale_godown)
-                
-                # Update inventory
-                inventory = BagInventory.query.filter_by(
-                    grain_id=data['grain_id'],
-                    godown_id=godown_detail['godown_id']
-                ).first()
-                
-                inventory.remove_bags(godown_detail['number_of_bags'])
+                db.session.add(detail)
             
-            # Finally commit everything
             db.session.commit()
             
             return jsonify({
-                'message': 'Sale created successfully',
-                'bill_number': sale.bill_number
+                'id': sale.id,
+                'bill_number': sale.bill_number,
+                'message': 'Sale created successfully'
             }), 201
             
-        except ValueError as e:
+        except Exception as e:
             db.session.rollback()
-            return jsonify({'error': str(e)}), 400
+            raise e
             
     except Exception as e:
         print(f"Error creating sale: {str(e)}")
-        return jsonify({'error': 'Failed to create sale'}), 500
+        return jsonify({'error': str(e)}), 500
 
 @sale.route('/sales/<int:sale_id>', methods=['GET'])
 @jwt_required()
@@ -296,7 +289,9 @@ def delete_sale(sale_id):
                 ).with_for_update().first()
                 
                 if inventory:
+                    # Add bags back to inventory
                     inventory.number_of_bags += detail.number_of_bags
+                    db.session.add(inventory)
             
             # Delete sale and its details
             db.session.delete(sale)
