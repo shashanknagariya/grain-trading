@@ -77,10 +77,19 @@ export const API_URL = process.env.VITE_API_URL || 'http://localhost:5000';
 export const fetchPurchases = async () => {
   try {
     const response = await api.get<Purchase[]>('/api/purchases');
-    return response.data.map(purchase => ({
-      ...purchase,
-      grain: purchase.grain || { id: purchase.grain_id, name: '' }
-    }));
+    return response.data.map(purchase => {
+      // Ensure all required fields are present with their correct types
+      return {
+        ...purchase,
+        number_of_bags: typeof purchase.number_of_bags === 'number' ? purchase.number_of_bags : parseInt(purchase.number_of_bags as any) || 0,
+        total_weight: typeof purchase.total_weight === 'number' ? purchase.total_weight : parseFloat(purchase.total_weight as any) || 0,
+        total_amount: typeof purchase.total_amount === 'number' ? purchase.total_amount : parseFloat(purchase.total_amount as any) || 0,
+        grain: {
+          id: purchase.grain_id,
+          name: (purchase.grain && 'name' in purchase.grain) ? purchase.grain.name : ''
+        }
+      };
+    });
   } catch (error) {
     console.error('Error fetching purchases:', error);
     throw error;
