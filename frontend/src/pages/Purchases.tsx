@@ -319,8 +319,8 @@ export const Purchases: React.FC = () => {
                   <TableCell>{formatDate(new Date(purchase.purchase_date))}</TableCell>
                   <TableCell>{purchase.supplier_name}</TableCell>
                   <TableCell>{purchase.grain_name}</TableCell>
-                  <TableCell align="right">-</TableCell>
-                  <TableCell align="right">-</TableCell>
+                  <TableCell align="right">{purchase.number_of_bags?.toLocaleString() || '-'}</TableCell>
+                  <TableCell align="right">{purchase.total_weight ? `${purchase.total_weight.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kg` : '-'}</TableCell>
                   <TableCell align="right">{formatCurrency(purchase.total_amount)}</TableCell>
                   <TableCell>
                     <Chip
