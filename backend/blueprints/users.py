@@ -58,15 +58,16 @@ def create_user():
         if User.query.filter_by(email=data['email']).first():
             return jsonify({'error': 'Email already exists'}), 400
             
-        # Validate role
-        if data['role'] not in [role.value for role in Role]:
-            return jsonify({'error': 'Invalid role'}), 400
+        # Validate role (case-insensitive)
+        role = data['role'].lower()
+        if role not in [r.value for r in Role]:
+            return jsonify({'error': f'Invalid role. Must be one of: {", ".join([r.value for r in Role])}'}, 400)
         
         # Create user
         user = User(
             username=data['username'],
             email=data['email'],
-            role=data['role']
+            role=role  # Use the lowercase role
         )
         user.set_password(data['password'])
         

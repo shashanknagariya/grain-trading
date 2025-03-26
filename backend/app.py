@@ -36,11 +36,22 @@ def create_app():
                 "https://shashanknagariya.pythonanywhere.com"
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"],
+            "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Origin"],
             "supports_credentials": True,
             "expose_headers": ["Content-Type", "Authorization"]
         }
     })
+
+    # Handle OPTIONS requests for CORS preflight
+    @app.before_request
+    def handle_preflight():
+        if request.method == "OPTIONS":
+            response = make_response()
+            response.headers.add("Access-Control-Allow-Origin", request.headers.get("Origin", "*"))
+            response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+            response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
+            response.headers.add("Access-Control-Allow-Credentials", "true")
+            return response
     
     # Configure SQLAlchemy
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grain_trading.db'

@@ -2,11 +2,15 @@ import axios from 'axios';
 import { cacheManager } from '../utils/cacheStrategy';
 import { handleApiError } from '../utils/errorHandling';
 import { Purchase } from '../types/purchase';
-import { Sale } from '../types/sale'; // Added import for Sale type
+import { Sale } from '../types/sale';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  timeout: 10000
+  timeout: 10000,
+  withCredentials: true, // Enable sending cookies
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
 // Add request interceptor for authentication
@@ -71,65 +75,76 @@ export const apiWithCache = {
   }
 }; 
 
-export const API_URL = process.env.VITE_API_URL || 'http://localhost:5000';
-
-// Update fetchPurchases to handle the actual API response format
+// Purchase API functions
 export const fetchPurchases = async () => {
   try {
-    const response = await api.get<Purchase[]>('/api/purchases');
-    return response.data.map(purchase => ({
-      ...purchase,
-      // Ensure all required fields are present and properly formatted
-      grain_name: decodeURIComponent(JSON.parse(`"${purchase.grain_name}"`)), // Handle Unicode characters
-      number_of_bags: typeof purchase.number_of_bags === 'number' ? purchase.number_of_bags : parseInt(purchase.number_of_bags as any) || 0,
-      weight_per_bag: typeof purchase.weight_per_bag === 'number' ? purchase.weight_per_bag : parseFloat(purchase.weight_per_bag as any) || 0,
-      extra_weight: typeof purchase.extra_weight === 'number' ? purchase.extra_weight : parseFloat(purchase.extra_weight as any) || 0,
-      total_weight: typeof purchase.total_weight === 'number' ? purchase.total_weight : parseFloat(purchase.total_weight as any) || 0,
-      rate_per_kg: typeof purchase.rate_per_kg === 'number' ? purchase.rate_per_kg : parseFloat(purchase.rate_per_kg as any) || 0,
-      total_amount: typeof purchase.total_amount === 'number' ? purchase.total_amount : parseFloat(purchase.total_amount as any) || 0,
-      paid_amount: typeof purchase.paid_amount === 'number' ? purchase.paid_amount : parseFloat(purchase.paid_amount as any) || 0,
-      payment_status: purchase.payment_status || 'pending'
-    }));
+    const response = await api.get('/api/purchases');
+    return response.data;
   } catch (error) {
-    console.error('Error fetching purchases:', error);
-    throw error;
+    throw handleApiError(error);
   }
 };
 
-// Purchase API functions
-export const updatePurchase = async (id: number, data: Partial<Purchase>): Promise<Purchase> => {
-  const response = await api.put<Purchase>(`/api/purchases/${id}`, data);
-  return response.data;
+export const createPurchase = async (data: Partial<Purchase>) => {
+  try {
+    const response = await api.post('/api/purchases', data);
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+export const updatePurchase = async (id: number, data: Partial<Purchase>) => {
+  try {
+    const response = await api.put(`/api/purchases/${id}`, data);
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
 export const deletePurchase = async (id: number) => {
   try {
-    const response = await api.delete<{ message: string }>(`/api/purchases/${id}`);
-    return response.data;
+    await api.delete(`/api/purchases/${id}`);
   } catch (error) {
-    console.error('Error deleting purchase:', error);
-    throw error;
+    throw handleApiError(error);
   }
 };
 
 // Sales API functions
-export const getSales = async (): Promise<Sale[]> => {
-  const response = await api.get<Sale[]>('/api/sales');
-  return response.data;
+export const getSales = async () => {
+  try {
+    const response = await api.get('/api/sales');
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-export const createSale = async (data: Partial<Sale>): Promise<Sale> => {
-  const response = await api.post<Sale>('/api/sales', data);
-  return response.data;
+export const createSale = async (data: Partial<Sale>) => {
+  try {
+    const response = await api.post('/api/sales', data);
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-export const updateSale = async (id: number, data: Partial<Sale>): Promise<Sale> => {
-  const response = await api.put<Sale>(`/api/sales/${id}`, data);
-  return response.data;
+export const updateSale = async (id: number, data: Partial<Sale>) => {
+  try {
+    const response = await api.put(`/api/sales/${id}`, data);
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-export const deleteSale = async (id: number): Promise<void> => {
-  await api.delete(`/api/sales/${id}`);
+export const deleteSale = async (id: number) => {
+  try {
+    await api.delete(`/api/sales/${id}`);
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
 // Export the api instance

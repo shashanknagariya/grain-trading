@@ -71,6 +71,7 @@ def generate_bill_number():
 
 @purchase.route('/purchases', methods=['POST'])
 @jwt_required()
+@require_permission(Permission.MAKE_PURCHASE.value)  
 def create_purchase():
     try:
         data = request.get_json()
@@ -93,6 +94,15 @@ def create_purchase():
         db.session.begin_nested()
         
         try:
+            # Validate grain and godown exist
+            grain = Grain.query.get(data['grain_id'])
+            if not grain:
+                return jsonify({'error': 'Invalid grain_id'}), 400
+                
+            godown = Godown.query.get(data['godown_id'])
+            if not godown:
+                return jsonify({'error': 'Invalid godown_id'}), 400
+            
             # Create purchase record
             purchase = Purchase(
                 bill_number=bill_number,
@@ -119,33 +129,44 @@ def create_purchase():
             ).with_for_update().first()  # Lock the row for update
             
             if not inventory:
+                # Create new inventory record
                 inventory = BagInventory(
                     grain_id=data['grain_id'],
                     godown_id=data['godown_id'],
-                    number_of_bags=0
+                    number_of_bags=data['number_of_bags']
                 )
                 db.session.add(inventory)
-            
-            inventory.add_bags(data['number_of_bags'])
+            else:
+                # Update existing inventory
+                inventory.number_of_bags += data['number_of_bags']
             
             db.session.commit()
             
+            # Return the created purchase with grain name
             return jsonify({
-                'message': 'Purchase created successfully',
-                'purchase': {
-                    'id': purchase.id,
-                    'bill_number': purchase.bill_number,
-                    'total_amount': purchase.total_amount
-                }
+                'id': purchase.id,
+                'bill_number': purchase.bill_number,
+                'grain_name': grain.name,
+                'supplier_name': purchase.supplier_name,
+                'number_of_bags': purchase.number_of_bags,
+                'weight_per_bag': float(purchase.weight_per_bag),
+                'extra_weight': float(purchase.extra_weight),
+                'total_weight': float(purchase.total_weight),
+                'rate_per_kg': float(purchase.rate_per_kg),
+                'total_amount': float(purchase.total_amount),
+                'payment_status': purchase.payment_status,
+                'paid_amount': float(purchase.paid_amount),
+                'purchase_date': purchase.purchase_date.isoformat()
             }), 201
             
         except Exception as e:
             db.session.rollback()
-            raise e
+            print(f"Error in transaction: {str(e)}")
+            return jsonify({'error': 'Transaction failed'}), 500
             
     except Exception as e:
         print(f"Error creating purchase: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Failed to create purchase'}), 500
 
 @purchase.route('/purchases/<int:purchase_id>', methods=['GET'])
 @jwt_required()

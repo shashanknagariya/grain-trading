@@ -11,11 +11,15 @@ import {
   FormControl,
   InputLabel,
   Select,
-  Alert
+  SelectChangeEvent,
+  Box,
+  CircularProgress
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { formatWeight, formatCurrency } from '../utils/formatters';
+import { formatWeight } from '../utils/formatters';
 import { useNotification } from '../contexts/NotificationContext';
+import { api } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 interface Grain {
   id: number;
@@ -29,7 +33,7 @@ interface Godown {
 
 interface PurchaseFormData {
   grain_id: string;
-  seller_name: string;
+  supplier_name: string;
   number_of_bags: string;
   weight_per_bag: string;
   extra_weight: string;
@@ -49,11 +53,6 @@ interface PurchasePayload {
   rate_per_kg: number;
   godown_id: number;
   purchase_date: string;
-  payment_status: string;
-  payment_amount: number;
-  total_amount: number;
-  notes: string;
-  created_by: number;
 }
 
 interface PurchaseFormProps {
@@ -67,331 +66,232 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({
   onClose,
   onSubmit
 }) => {
+  const { t } = useTranslation();
+  const { showError } = useNotification();
+  const [loading, setLoading] = useState(false);
+  const [grains, setGrains] = useState<Grain[]>([]);
+  const [godowns, setGodowns] = useState<Godown[]>([]);
   const [formData, setFormData] = useState<PurchaseFormData>({
     grain_id: '',
-    seller_name: '',
+    supplier_name: '',
     number_of_bags: '',
     weight_per_bag: '',
     extra_weight: '0',
-    total_weight: '',
+    total_weight: '0',
     rate_per_kg: '',
     godown_id: '',
     purchase_date: new Date()
   });
-  const [grains, setGrains] = useState<Grain[]>([]);
-  const [godowns, setGodowns] = useState<Godown[]>([]);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { showError } = useNotification();
 
   useEffect(() => {
-    fetchData();
+    fetchGrainsAndGodowns();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const [grainsResponse, godownsResponse] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/api/grains`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        fetch(`${import.meta.env.VITE_API_URL}/api/godowns`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
-      ]);
-
-      if (!grainsResponse.ok || !godownsResponse.ok) {
-        throw new Error('Failed to fetch data');
-      }
-
-      const [grainsData, godownsData] = await Promise.all([
-        grainsResponse.json(),
-        godownsResponse.json()
-      ]);
-
-      setGrains(grainsData);
-      setGodowns(godownsData);
-    } catch (err) {
-      setError('Failed to load form data');
-      showError('Failed to load form data');
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const fetchGrainsAndGodowns = async () => {
     try {
       setLoading(true);
-      setError('');
-
-      // Validate all required fields first
-      const requiredFields: Record<string, string> = {
-        grain_id: 'Grain',
-        seller_name: 'Seller Name',
-        number_of_bags: 'Number of Bags',
-        weight_per_bag: 'Weight per Bag',
-        rate_per_kg: 'Rate per KG',
-        godown_id: 'Godown'
-      };
-
-      const missingFields: string[] = [];
-      for (const [field, label] of Object.entries(requiredFields)) {
-        if (!formData[field as keyof PurchaseFormData] || String(formData[field as keyof PurchaseFormData]).trim() === '') {
-          missingFields.push(label);
-        }
-      }
-
-      if (missingFields.length > 0) {
-        showError(`Missing required fields: ${missingFields.join(', ')}`);
-        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
-      }
-
-      // Parse and validate numeric fields
-      const numberFields = {
-        number_of_bags: parseInt(formData.number_of_bags),
-        weight_per_bag: parseFloat(formData.weight_per_bag),
-        rate_per_kg: parseFloat(formData.rate_per_kg),
-        extra_weight: parseFloat(formData.extra_weight || '0')
-      };
-
-      // Validate numeric fields
-      for (const [field, value] of Object.entries(numberFields)) {
-        if (isNaN(value) || value < 0) {
-          showError(`Invalid value for ${field}`);
-          throw new Error(`Invalid value for ${field}`);
-        }
-      }
-
-      // Calculate total weight
-      const totalWeight = (numberFields.number_of_bags * numberFields.weight_per_bag) + numberFields.extra_weight;
-
-      // Prepare the payload with additional fields
-      const payload: PurchasePayload = {
-        grain_id: parseInt(formData.grain_id),
-        supplier_name: formData.seller_name.trim(),
-        number_of_bags: numberFields.number_of_bags,
-        weight_per_bag: numberFields.weight_per_bag,
-        extra_weight: numberFields.extra_weight,
-        total_weight: totalWeight,
-        rate_per_kg: numberFields.rate_per_kg,
-        godown_id: parseInt(formData.godown_id),
-        purchase_date: (formData.purchase_date || new Date()).toISOString(),
-        payment_status: 'pending',
-        payment_amount: 0,
-        total_amount: totalWeight * numberFields.rate_per_kg,
-        notes: '',
-        created_by: parseInt(localStorage.getItem('user_id') || '1')
-      };
-
-      // Log the payload for debugging
-      console.log('Submitting purchase with payload:', JSON.stringify(payload, null, 2));
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/purchases`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries([...response.headers.entries()]));
-
-      let responseData;
-      try {
-        responseData = await response.json();
-        console.log('Response data:', responseData);
-      } catch (e) {
-        console.error('Error parsing response:', e);
-        responseData = { message: 'Server error' };
-      }
-
-      if (!response.ok) {
-        showError(responseData.message || `Failed to create purchase: ${response.status}`);
-        throw new Error(responseData.message || `Failed to create purchase: ${response.status}`);
-      }
-
-      onSubmit(payload);
-      handleClose();
-    } catch (err) {
-      console.error('Purchase creation error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create purchase');
+      const [grainsResponse, godownsResponse] = await Promise.all([
+        api.get('/api/grains'),
+        api.get('/api/godowns')
+      ]);
+      setGrains(grainsResponse.data);
+      setGodowns(godownsResponse.data);
+    } catch (error) {
+      showError(t('errors.fetch_error'));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleClose = () => {
-    setFormData({
-      grain_id: '',
-      seller_name: '',
-      number_of_bags: '',
-      weight_per_bag: '',
-      extra_weight: '0',
-      total_weight: '',
-      rate_per_kg: '',
-      godown_id: '',
-      purchase_date: new Date()
-    });
-    setError('');
-    onClose();
-  };
-
-  const calculateTotals = () => {
-    const bags = parseInt(formData.number_of_bags) || 0;
+  const calculateTotalWeight = () => {
+    const bags = parseFloat(formData.number_of_bags) || 0;
     const weightPerBag = parseFloat(formData.weight_per_bag) || 0;
     const extraWeight = parseFloat(formData.extra_weight) || 0;
-    const ratePerKg = parseFloat(formData.rate_per_kg) || 0;
-
-    if (isNaN(bags) || isNaN(weightPerBag) || isNaN(extraWeight) || isNaN(ratePerKg)) {
-      return {
-        totalWeight: formatWeight(0),
-        totalAmount: formatCurrency(0)
-      };
-    }
-
     const totalWeight = (bags * weightPerBag) + extraWeight;
-    const totalAmount = totalWeight * ratePerKg;
-
-    return {
-      totalWeight: formatWeight(totalWeight),
-      totalAmount: formatCurrency(totalAmount)
-    };
+    setFormData(prev => ({ ...prev, total_weight: totalWeight.toFixed(2) }));
   };
 
-  const { totalWeight, totalAmount } = calculateTotals();
+  useEffect(() => {
+    calculateTotalWeight();
+  }, [formData.number_of_bags, formData.weight_per_bag, formData.extra_weight]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.purchase_date) {
+      showError(t('purchases.errors.date_required'));
+      return;
+    }
+
+    try {
+      const payload: PurchasePayload = {
+        grain_id: parseInt(formData.grain_id),
+        supplier_name: formData.supplier_name,
+        number_of_bags: parseInt(formData.number_of_bags),
+        weight_per_bag: parseFloat(formData.weight_per_bag),
+        extra_weight: parseFloat(formData.extra_weight || '0'),
+        total_weight: parseFloat(formData.total_weight),
+        rate_per_kg: parseFloat(formData.rate_per_kg),
+        godown_id: parseInt(formData.godown_id),
+        purchase_date: formData.purchase_date.toISOString()
+      };
+
+      await onSubmit(payload);
+      onClose();
+    } catch (error) {
+      showError(t('purchases.errors.create_error'));
+    }
+  };
+
+  const handleSelectChange = (field: keyof PurchaseFormData) => (
+    event: SelectChangeEvent<string>
+  ) => {
+    setFormData(prev => ({ ...prev, [field]: event.target.value }));
+  };
+
+  const handleInputChange = (field: keyof PurchaseFormData) => (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setFormData(prev => ({ ...prev, [field]: event.target.value }));
+  };
+
+  if (loading) {
+    return (
+      <Dialog open={open} onClose={onClose}>
+        <DialogContent>
+          <Box display="flex" justifyContent="center" p={3}>
+            <CircularProgress />
+          </Box>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Create New Purchase</DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <form onSubmit={handleSubmit}>
+        <DialogTitle>{t('purchases.add_purchase')}</DialogTitle>
         <DialogContent>
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Grain</InputLabel>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>{t('purchases.grain')}</InputLabel>
                 <Select
                   value={formData.grain_id}
-                  onChange={(e) => setFormData({ ...formData, grain_id: e.target.value })}
-                  label="Grain"
+                  onChange={handleSelectChange('grain_id')}
+                  required
+                  label={t('purchases.grain')}
                 >
-                  {grains.map((grain) => (
-                    <MenuItem key={grain.id} value={grain.id}>{grain.name}</MenuItem>
+                  {grains.map(grain => (
+                    <MenuItem key={grain.id} value={grain.id}>
+                      {grain.name}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Godown</InputLabel>
+            
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>{t('purchases.godown')}</InputLabel>
                 <Select
                   value={formData.godown_id}
-                  onChange={(e) => setFormData({ ...formData, godown_id: e.target.value })}
-                  label="Godown"
+                  onChange={handleSelectChange('godown_id')}
+                  required
+                  label={t('purchases.godown')}
                 >
-                  {godowns.map((godown) => (
-                    <MenuItem key={godown.id} value={godown.id}>{godown.name}</MenuItem>
+                  {godowns.map(godown => (
+                    <MenuItem key={godown.id} value={godown.id}>
+                      {godown.name}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Number of Bags"
+                label={t('purchases.supplier_name')}
+                value={formData.supplier_name}
+                onChange={handleInputChange('supplier_name')}
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
                 type="number"
+                label={t('purchases.number_of_bags')}
                 value={formData.number_of_bags}
-                onChange={(e) => setFormData({ ...formData, number_of_bags: e.target.value })}
+                onChange={handleInputChange('number_of_bags')}
                 required
+                inputProps={{ min: 1 }}
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Weight per Bag (kg)"
                 type="number"
+                label={t('purchases.weight_per_bag')}
                 value={formData.weight_per_bag}
-                onChange={(e) => setFormData({ ...formData, weight_per_bag: e.target.value })}
+                onChange={handleInputChange('weight_per_bag')}
                 required
+                inputProps={{ min: 0, step: 0.01 }}
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Extra Weight (kg)"
                 type="number"
+                label={t('purchases.extra_weight')}
                 value={formData.extra_weight}
-                onChange={(e) => setFormData({ ...formData, extra_weight: e.target.value })}
+                onChange={handleInputChange('extra_weight')}
+                inputProps={{ min: 0, step: 0.01 }}
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Rate per KG"
                 type="number"
+                label={t('purchases.rate_per_kg')}
                 value={formData.rate_per_kg}
-                onChange={(e) => setFormData({ ...formData, rate_per_kg: e.target.value })}
+                onChange={handleInputChange('rate_per_kg')}
                 required
+                inputProps={{ min: 0, step: 0.01 }}
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Supplier Name"
-                value={formData.seller_name}
-                onChange={(e) => setFormData({ ...formData, seller_name: e.target.value })}
-                required
+                label={t('purchases.total_weight')}
+                value={formatWeight(parseFloat(formData.total_weight))}
+                InputProps={{ readOnly: true }}
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6}>
               <DatePicker
-                label="Purchase Date"
+                label={t('purchases.purchase_date')}
                 value={formData.purchase_date}
-                onChange={(date) => setFormData({ ...formData, purchase_date: date })}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Total Weight"
-                value={totalWeight}
-                InputProps={{ readOnly: true }}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Total Amount"
-                value={totalAmount}
-                InputProps={{ readOnly: true }}
+                onChange={(date) => setFormData(prev => ({ ...prev, purchase_date: date }))}
+                slotProps={{ textField: { fullWidth: true, required: true } }}
               />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button 
-            type="submit" 
-            variant="contained" 
-            color="primary"
-            disabled={loading}
-          >
-            {loading ? 'Creating...' : 'Create Purchase'}
+          <Button onClick={onClose}>{t('common.cancel')}</Button>
+          <Button type="submit" variant="contained" color="primary">
+            {t('common.save')}
           </Button>
         </DialogActions>
       </form>
     </Dialog>
   );
-}; 
+};
