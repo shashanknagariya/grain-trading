@@ -7,9 +7,14 @@ import {
   TextField,
   Button,
   Grid,
-  MenuItem
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  OutlinedInput
 } from '@mui/material';
 import { Grain } from '../types/grain';
+import { Godown } from '../types/godown';
 import { useNotification } from '../contexts/NotificationContext';
 import { useTranslation } from 'react-i18next';
 
@@ -42,6 +47,9 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
   const { showError, showSuccess } = useNotification();
 
   const [grains, setGrains] = useState<Grain[]>([]);
+  const [godowns, setGodowns] = useState<Godown[]>([]);
+  const [selectedGodown, setSelectedGodown] = useState<string>('');
+  const [godownBags, setGodownBags] = useState<string>('');
   const [formData, setFormData] = useState<SaleFormData>({
     grain_id: '',
     buyer_name: '',
@@ -72,14 +80,43 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
     }
   };
 
+  const fetchGodowns = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/godowns`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) throw new Error(t('errors.fetch_error'));
+      const data = await response.json();
+      setGodowns(data);
+    } catch (error) {
+      showError(t('errors.fetch_error'));
+    }
+  };
+
   useEffect(() => {
     if (open) {
       fetchGrains();
+      fetchGodowns();
     }
   }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate godown details
+    if (formData.godown_details.length === 0) {
+      showError(t('sales.errors.no_godown_selected'));
+      return;
+    }
+
+    const totalBags = formData.godown_details.reduce((sum, detail) => sum + detail.number_of_bags, 0);
+    if (totalBags !== parseInt(formData.number_of_bags)) {
+      showError(t('sales.errors.bags_mismatch'));
+      return;
+    }
+
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales`, {
         method: 'POST',
@@ -108,6 +145,8 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
         buyer_gst: '',
         number_of_bags: ''
       });
+      setSelectedGodown('');
+      setGodownBags('');
     } catch (error) {
       showError(t('errors.save_error'));
     }
@@ -116,6 +155,40 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddGodown = () => {
+    if (!selectedGodown || !godownBags) {
+      showError(t('sales.errors.invalid_godown_details'));
+      return;
+    }
+
+    const newGodownDetails = [...formData.godown_details];
+    const existingIndex = newGodownDetails.findIndex(d => d.godown_id === selectedGodown);
+
+    if (existingIndex >= 0) {
+      newGodownDetails[existingIndex].number_of_bags += parseInt(godownBags);
+    } else {
+      newGodownDetails.push({
+        godown_id: selectedGodown,
+        number_of_bags: parseInt(godownBags)
+      });
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      godown_details: newGodownDetails
+    }));
+
+    setSelectedGodown('');
+    setGodownBags('');
+  };
+
+  const handleRemoveGodown = (godownId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      godown_details: prev.godown_details.filter(d => d.godown_id !== godownId)
+    }));
   };
 
   return (
@@ -151,6 +224,62 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
                 required
               />
             </Grid>
+            <Grid item xs={12}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={4}>
+                  <FormControl fullWidth>
+                    <InputLabel>{t('sales.select_godown')}</InputLabel>
+                    <Select
+                      value={selectedGodown}
+                      onChange={(e) => setSelectedGodown(e.target.value)}
+                      input={<OutlinedInput label={t('sales.select_godown')} />}
+                    >
+                      {godowns.map((godown) => (
+                        <MenuItem key={godown.id} value={godown.id}>
+                          {godown.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label={t('sales.bags_from_godown')}
+                    value={godownBags}
+                    onChange={(e) => setGodownBags(e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Button
+                    variant="contained"
+                    onClick={handleAddGodown}
+                    fullWidth
+                  >
+                    {t('common.add')}
+                  </Button>
+                </Grid>
+              </Grid>
+            </Grid>
+            {formData.godown_details.map((detail, index) => (
+              <Grid item xs={12} key={index}>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={8}>
+                    {godowns.find(g => g.id === detail.godown_id)?.name}: {detail.number_of_bags} {t('sales.bags')}
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleRemoveGodown(detail.godown_id)}
+                    >
+                      {t('common.delete')}
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+            ))}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -245,9 +374,7 @@ export const SalesForm: React.FC<SalesFormProps> = ({ open, onClose, onSubmit })
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>{t('common.cancel')}</Button>
-          <Button type="submit" variant="contained" color="primary">
-            {t('common.save')}
-          </Button>
+          <Button type="submit" variant="contained">{t('common.save')}</Button>
         </DialogActions>
       </form>
     </Dialog>

@@ -30,7 +30,8 @@
     "inventory": "इन्वेंटरी",
     "grains": "अनाज",
     "godowns": "गोदाम",
-    "users": "उपयोगकर्ता"
+    "users": "उपयोगकर्ता",
+    "voice_bill": "आवाज से बिल बनाएं"
   },
   "dashboard": {
     "title": "डैशबोर्ड",
@@ -131,33 +132,43 @@
   },
   "sales": {
     "title": "बिक्री",
-    "bill": "बिल",
     "add_sale": "नई बिक्री जोड़ें",
     "edit_sale": "बिक्री संपादित करें",
     "delete_sale": "बिक्री हटाएं",
-    "sale_date": "बिक्री तिथि",
     "bill_number": "बिल नंबर",
     "customer_name": "ग्राहक का नाम",
-    "customer_gst": "ग्राहक जीएसटी",
-    "grain_name": "अनाज का नाम",
-    "number_of_bags": "बैग की संख्या",
-    "total_weight": "कुल वजन (किलोग्राम)",
-    "rate_per_kg": "प्रति किलो दर",
+    "grain_name": "अनाज",
+    "number_of_bags": "बोरों की संख्या",
+    "total_weight": "कुल वजन",
     "total_amount": "कुल राशि",
-    "payment_status": "भुगतान की स्थिति",
-    "paid": "भुगतान किया गया",
-    "pending": "लंबित",
-    "partial": "आंशिक",
-    "view_details": "विवरण देखें",
+    "payment_status": "भुगतान स्थिति",
+    "sale_date": "बिक्री की तारीख",
+    "min_amount": "न्यूनतम राशि",
+    "max_amount": "अधिकतम राशि",
+    "start_date": "आरंभ तिथि",
+    "end_date": "अंतिम तिथि",
     "print_bill": "बिल प्रिंट करें",
-    "sale_details": "बिक्री विवरण",
+    "sale_created": "बिक्री सफलतापूर्वक जोड़ी गई",
+    "update_success": "बिक्री सफलतापूर्वक अपडेट की गई",
+    "delete_success": "बिक्री सफलतापूर्वक हटाई गई",
+    "select_godown": "गोदाम चुनें",
+    "bags_from_godown": "बोरों की संख्या",
+    "bags": "बोरे",
+    "errors": {
+      "fetch_error": "बिक्री लाने में विफल",
+      "create_error": "बिक्री बनाने में विफल",
+      "update_error": "बिक्री अपडेट करने में विफल",
+      "delete_error": "बिक्री हटाने में विफल",
+      "no_godown_selected": "कृपया कम से कम एक गोदाम चुनें",
+      "bags_mismatch": "गोदामों से कुल बोरों की संख्या, कुल बोरों की संख्या से मेल खानी चाहिए",
+      "invalid_godown_details": "कृपया वैध गोदाम विवरण दर्ज करें"
+    },
+    "customer_gst": "ग्राहक जीएसटी",
     "transportation_mode": "परिवहन का माध्यम",
     "vehicle_number": "वाहन संख्या",
     "driver_name": "चालक का नाम",
     "lr_number": "एलआर नंबर",
-    "po_number": "पीओ नंबर",
-    "sale_created": "बिक्री सफलतापूर्वक जोड़ी गई",
-    "status_updated": "भुगतान की स्थिति अपडेट की गई"
+    "po_number": "पीओ नंबर"
   },
   "inventory": {
     "title": "वर्तमान इन्वेंटरी",
@@ -171,6 +182,25 @@
       "view": "विवरण देखें",
       "edit": "संपादित करें",
       "delete": "हटाएं"
+    }
+  },
+  "voice": {
+    "title": "आवाज से बिल बनाएं",
+    "bill_type": "बिल का प्रकार",
+    "purchase_bill": "खरीद बिल",
+    "sale_bill": "बिक्री बिल",
+    "click_to_start": "रिकॉर्डिंग शुरू करने के लिए माइक पर क्लिक करें",
+    "recording_duration": "रिकॉर्डिंग: {{duration}} सेकंड",
+    "max_duration_reached": "अधिकतम रिकॉर्डिंग अवधि पूरी हो गई (1 मिनट)",
+    "review_title": "बिल की समीक्षा करें",
+    "approve": "बिल बनाएं",
+    "approve_success": "बिल सफलतापूर्वक बन गया",
+    "delete_success": "अस्थायी बिल हटा दिया गया",
+    "errors": {
+      "microphone_access": "माइक्रोफ़ोन तक पहुंच नहीं मिल सकी",
+      "processing": "आवाज को प्रोसेस करने में त्रुटि",
+      "delete": "अस्थायी बिल हटाने में त्रुटि",
+      "approve": "बिल बनाने में त्रुटि"
     }
   },
   "errors": {

@@ -1,10 +1,13 @@
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
-import GrainIcon from '@mui/icons-material/Grain';
-import WarehouseIcon from '@mui/icons-material/Warehouse';
-import GroupIcon from '@mui/icons-material/Group';
+import {
+  Dashboard as DashboardIcon,
+  ShoppingCart as ShoppingCartIcon,
+  LocalShipping as PointOfSaleIcon,
+  Inventory as InventoryIcon,
+  Grain as GrainIcon,
+  Warehouse as WarehouseIcon,
+  Group as GroupIcon,
+  KeyboardVoice as KeyboardVoiceIcon
+} from '@mui/icons-material';
 
 export const navigationItems = [
   {
@@ -41,5 +44,10 @@ export const navigationItems = [
     path: '/users',
     label: 'Users',
     icon: <GroupIcon />
+  },
+  {
+    path: '/voice-bill',
+    label: 'Voice Bill',
+    icon: <KeyboardVoiceIcon />
   }
 ]; 

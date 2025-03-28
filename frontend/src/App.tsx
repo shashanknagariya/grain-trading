@@ -12,6 +12,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Godowns } from './pages/Godowns';
 import { PurchaseDetailPage } from './pages/PurchaseDetail';
 import { CreateSale } from './pages/CreateSale';
+import { VoiceBillCreation } from './pages/VoiceBillCreation';
 import './App.css';
 import './styles/print.css';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -118,6 +119,7 @@ const App = () => {
                                   <LazyUsers />
                                 </Suspense>
                               } />
+                              <Route path="/voice-bill" element={<VoiceBillCreation />} />
                             </Routes>
                           </Layout>
                         }

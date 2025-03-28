@@ -24,7 +24,6 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, MoreVert as MoreVertIcon, Edit as EditIcon, Delete as DeleteIcon, FilterList as FilterIcon, Print as PrintIcon, Visibility as ViewIcon } from '@mui/icons-material';
 import { SalesForm } from '../components/SalesForm';
-import { useNotification } from '../contexts/NotificationContext';
 import { formatDate, formatCurrency } from '../utils/formatters';
 import { SaleDetails } from '../components/SaleDetails';
 import { SaleBillPrint } from '../components/SaleBillPrint';
@@ -62,7 +61,6 @@ const initialFilters: SaleFilters = {
 export const Sales: React.FC = () => {
   const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
-  const { showError } = useNotification();
   const { user } = useAuth();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,35 +81,6 @@ export const Sales: React.FC = () => {
     documentTitle: `${t('sales.title')}-${selectedSale?.bill_number || t('sales.bill')}`,
     onAfterPrint: () => console.log('Printed successfully')
   });
-
-  const handlePaymentStatusChange = async (saleId: number, newStatus: 'pending' | 'paid' | 'partial') => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sales/${saleId}/payment-status`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (!response.ok) throw new Error(t('errors.save_error'));
-      
-      setSales(sales.map(sale => 
-        sale.id === saleId 
-          ? { ...sale, payment_status: newStatus }
-          : sale
-      ));
-
-      if (selectedSale && selectedSale.id === saleId) {
-        setSelectedSale({ ...selectedSale, payment_status: newStatus });
-      }
-      
-      showError(t('sales.status_updated'));
-    } catch (error) {
-      showError(t('errors.save_error'));
-    }
-  };
 
   useEffect(() => {
     const loadSales = async () => {
@@ -297,7 +266,7 @@ export const Sales: React.FC = () => {
             variant={isFiltersOpen ? 'contained' : 'outlined'}
             sx={{ mr: 1 }}
           >
-            {t('common.filters.title')}
+            {t('common.filters')}
           </Button>
           {user?.permissions.includes('make:sale') && (
             <Button
@@ -464,8 +433,6 @@ export const Sales: React.FC = () => {
         open={detailsOpen}
         onClose={() => setDetailsOpen(false)}
         sale={selectedSale}
-        onPrint={handlePrint}
-        handlePaymentStatusChange={handlePaymentStatusChange}
       />
 
       <EditSaleModal

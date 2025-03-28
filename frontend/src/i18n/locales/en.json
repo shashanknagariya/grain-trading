@@ -13,20 +13,18 @@
     "search": "Search",
     "loading": "Loading...",
     "noData": "No data available",
-    "error": "An error occurred",
+    "error": "Error",
     "success": "Success",
     "confirm": "Confirm",
     "actions": "Actions",
-    "noPermission": "You don't have permission to perform this action",
-    "print": "Print",
-    "clear": "Clear",
+    "filters": "Filters",
     "all": "All",
     "start_date": "Start Date",
     "end_date": "End Date",
     "min_value": "Min Value",
     "max_value": "Max Value",
-    "filters": "Filters",
     "payment_status": {
+      "label": "Payment Status",
       "paid": "Paid",
       "pending": "Pending",
       "partial": "Partial"
@@ -39,7 +37,8 @@
     "inventory": "Inventory",
     "grains": "Grains",
     "godowns": "Godowns",
-    "users": "Users"
+    "users": "Users",
+    "voice_bill": "Voice Bill Creation"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -111,27 +110,32 @@
     "total_amount": "Total Amount",
     "payment_status": "Payment Status",
     "sale_date": "Sale Date",
+    "min_amount": "Min Amount",
+    "max_amount": "Max Amount",
+    "start_date": "Start Date",
+    "end_date": "End Date",
     "print_bill": "Print Bill",
-    "filters": {
-      "bill_number": "Bill Number",
-      "customer_name": "Customer Name",
-      "grain_name": "Grain Name",
-      "date_range": "Date Range",
-      "amount_range": "Amount Range",
-      "payment_status": "Payment Status"
-    },
-    "paid": "Paid",
-    "pending": "Pending",
-    "partial": "Partial",
-    "create_success": "Sale created successfully",
+    "sale_created": "Sale created successfully",
     "update_success": "Sale updated successfully",
     "delete_success": "Sale deleted successfully",
+    "select_godown": "Select Godown",
+    "bags_from_godown": "Number of Bags",
+    "bags": "bags",
     "errors": {
       "fetch_error": "Failed to fetch sales",
       "create_error": "Failed to create sale",
       "update_error": "Failed to update sale",
-      "delete_error": "Failed to delete sale"
-    }
+      "delete_error": "Failed to delete sale",
+      "no_godown_selected": "Please select at least one godown",
+      "bags_mismatch": "Total bags from godowns must match the total number of bags",
+      "invalid_godown_details": "Please enter valid godown details"
+    },
+    "customer_gst": "Customer GST",
+    "transportation_mode": "Transportation Mode",
+    "vehicle_number": "Vehicle Number",
+    "driver_name": "Driver Name",
+    "lr_number": "LR Number",
+    "po_number": "PO Number"
   },
   "inventory": {
     "title": "Current Inventory",
@@ -184,6 +188,25 @@
     "addSuccess": "User added successfully",
     "editSuccess": "User updated successfully",
     "deleteSuccess": "User deleted successfully"
+  },
+  "voice": {
+    "title": "Voice Bill Creation",
+    "bill_type": "Bill Type",
+    "purchase_bill": "Purchase Bill",
+    "sale_bill": "Sale Bill",
+    "click_to_start": "Click microphone to start recording",
+    "recording_duration": "Recording: {{duration}}s",
+    "max_duration_reached": "Maximum recording duration reached (1 minute)",
+    "review_title": "Review Generated Bill",
+    "approve": "Create Bill",
+    "approve_success": "Bill created successfully",
+    "delete_success": "Intermediate bill deleted",
+    "errors": {
+      "microphone_access": "Could not access microphone",
+      "processing": "Error processing voice recording",
+      "delete": "Error deleting intermediate bill",
+      "approve": "Error creating bill"
+    }
   },
   "errors": {
     "fetch_error": "Failed to fetch data",

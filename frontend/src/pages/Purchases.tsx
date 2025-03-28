@@ -198,7 +198,7 @@ export const Purchases: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <SelectFilter
-                label={t('common.payment_status')}
+                label={t('common.payment_status.label')}
                 value={filters.paymentStatus}
                 onChange={(value) => handleFilterChange('paymentStatus', value)}
                 options={[
