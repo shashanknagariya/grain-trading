@@ -14,6 +14,7 @@ class Permission(str, Enum):
     WRITE_ALL = 'write:all'
     MANAGE_USERS = 'manage:users'
     MANAGE_INVENTORY = 'manage:inventory'
+    CREATE_PURCHASE = 'create:purchase'
     MAKE_PURCHASE = 'make:purchase'
     EDIT_PURCHASE = 'edit:purchase'
     DELETE_PURCHASE = 'delete:purchase'
@@ -28,6 +29,7 @@ ROLE_PERMISSIONS = {
     Role.MANAGER: [
         Permission.READ_ALL.value,
         Permission.MANAGE_INVENTORY.value,
+        Permission.CREATE_PURCHASE.value,
         Permission.MAKE_PURCHASE.value,
         Permission.EDIT_PURCHASE.value,
         Permission.DELETE_PURCHASE.value,

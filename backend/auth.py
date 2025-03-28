@@ -68,8 +68,9 @@ def get_user():
         'id': user.id,
         'username': user.username,
         'email': user.email,
-        'role': user.role
-    }) 
+        'role': user.role,
+        'permissions': user.permissions
+    })
 
 @auth.route('/forgot-password', methods=['POST'])
 def forgot_password():
