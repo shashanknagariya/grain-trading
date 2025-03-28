@@ -10,6 +10,7 @@ from models.grain import Grain
 from database import db
 from utils.error_handlers import handle_error
 from utils.validators import validate_audio_file
+from models import Purchase, Sale, SaleGodownDetail
 
 voice_bill = Blueprint('voice_bill', __name__)
 
@@ -17,7 +18,31 @@ voice_bill = Blueprint('voice_bill', __name__)
 openai.api_key = os.getenv('OPENAI_API_KEY')
 WHISPER_MODEL = os.getenv('OPENAI_WHISPER_MODEL', 'whisper-1')
 GPT_MODEL = os.getenv('OPENAI_GPT_MODEL', 'gpt-4-turbo-preview')
-SYSTEM_PROMPT_TEMPLATE = os.getenv('SYSTEM_PROMPT_TEMPLATE')
+
+# System prompt template for GPT
+SYSTEM_PROMPT_TEMPLATE = """
+You are a helpful assistant that extracts structured information from Hindi voice transcripts for {bill_type} bills in a grain trading business.
+The transcript will contain details about a {bill_type} transaction.
+
+Required fields to extract:
+{fields}
+
+Additional context:
+- Valid godown names: {godowns}
+- All numbers should be extracted as numeric values
+- Dates should be in YYYY-MM-DD format
+- Currency values should be in INR without symbols
+
+Please format your response as a valid JSON object with the required fields.
+Example format:
+{{
+    "field_name": "value",
+    "numeric_field": 123,
+    "date_field": "2024-03-28"
+}}
+
+If any required field is missing or unclear in the transcript, set its value to null.
+"""
 
 def get_valid_godowns():
     """Get list of valid godown names for prompt"""
@@ -102,9 +127,12 @@ def delete_voice_bill(bill_id):
     """Delete an intermediate bill"""
     try:
         bill = IntermediateBill.query.get_or_404(bill_id)
+        if bill.created_by_id != get_jwt_identity():
+            return jsonify({'error': 'Unauthorized'}), 403
+            
         db.session.delete(bill)
         db.session.commit()
-        return jsonify({'message': 'Intermediate bill deleted'}), 200
+        return jsonify({'message': 'Bill deleted successfully'}), 200
     except Exception as e:
         return handle_error(e)
 
@@ -114,41 +142,103 @@ def approve_voice_bill(bill_id):
     """Approve and create final bill from intermediate bill"""
     try:
         bill = IntermediateBill.query.get_or_404(bill_id)
+        if bill.created_by_id != get_jwt_identity():
+            return jsonify({'error': 'Unauthorized'}), 403
+            
+        data = bill.parsed_data
         
-        # Create actual bill based on type
+        # Create final bill based on type
         if bill.bill_type == 'purchase':
-            response = create_purchase_bill(bill.parsed_data)
+            final_bill = create_purchase_bill(data)
         else:
-            response = create_sale_bill(bill.parsed_data)
-
+            final_bill = create_sale_bill(data)
+            
         # Mark intermediate bill as approved
         bill.status = 'approved'
         db.session.commit()
-
-        return jsonify(response), 200
-
+        
+        return jsonify(final_bill.to_dict()), 200
     except Exception as e:
-        bill.status = 'error'
-        bill.error_message = str(e)
-        db.session.commit()
         return handle_error(e)
 
 def create_purchase_bill(data):
     """Create purchase bill from parsed data"""
-    # Call existing purchase bill creation API
-    response = requests.post(
-        f"{request.host_url}api/purchases",
-        json=data,
-        headers={'Authorization': request.headers.get('Authorization')}
+    # Find grain and godown
+    grain = Grain.query.filter_by(name=data['grain_name']).first()
+    if not grain:
+        raise ValueError(f"Invalid grain name: {data['grain_name']}")
+        
+    godown = Godown.query.filter_by(name=data['godown_name']).first()
+    if not godown:
+        raise ValueError(f"Invalid godown name: {data['godown_name']}")
+    
+    # Calculate total weight and amount
+    total_weight = data['number_of_bags'] * data['weight_per_bag']
+    total_amount = total_weight * data['rate_per_kg']
+    
+    # Create purchase bill
+    purchase = Purchase(
+        grain_id=grain.id,
+        godown_id=godown.id,
+        supplier_name=data['supplier_name'],
+        number_of_bags=data['number_of_bags'],
+        weight_per_bag=data['weight_per_bag'],
+        rate_per_kg=data['rate_per_kg'],
+        total_weight=total_weight,
+        total_amount=total_amount,
+        purchase_date=datetime.utcnow(),
+        payment_status='pending'
     )
-    return response.json()
+    
+    db.session.add(purchase)
+    db.session.commit()
+    
+    return purchase
 
 def create_sale_bill(data):
     """Create sale bill from parsed data"""
-    # Call existing sale bill creation API
-    response = requests.post(
-        f"{request.host_url}api/sales",
-        json=data,
-        headers={'Authorization': request.headers.get('Authorization')}
+    # Find grain
+    grain = Grain.query.filter_by(name=data['grain_name']).first()
+    if not grain:
+        raise ValueError(f"Invalid grain name: {data['grain_name']}")
+    
+    # Calculate total weight and amount
+    total_weight = data['number_of_bags'] * data['weight_per_bag']
+    total_amount = total_weight * data['rate_per_kg']
+    
+    # Create sale bill
+    sale = Sale(
+        grain_id=grain.id,
+        buyer_name=data['buyer_name'],
+        number_of_bags=data['number_of_bags'],
+        total_weight=total_weight,
+        rate_per_kg=data['rate_per_kg'],
+        total_amount=total_amount,
+        transportation_mode=data['transportation_mode'],
+        vehicle_number=data['vehicle_number'],
+        driver_name=data['driver_name'],
+        lr_number=data.get('lr_number'),
+        po_number=data.get('po_number'),
+        buyer_gst=data.get('buyer_gst'),
+        sale_date=datetime.utcnow(),
+        payment_status='pending'
     )
-    return response.json()
+    
+    db.session.add(sale)
+    db.session.commit()
+    
+    # Add godown details
+    for godown_detail in data['godown_details']:
+        godown = Godown.query.filter_by(name=godown_detail['name']).first()
+        if not godown:
+            raise ValueError(f"Invalid godown name: {godown_detail['name']}")
+            
+        sale_godown = SaleGodownDetail(
+            sale_id=sale.id,
+            godown_id=godown.id,
+            number_of_bags=godown_detail['bags']
+        )
+        db.session.add(sale_godown)
+    
+    db.session.commit()
+    return sale
