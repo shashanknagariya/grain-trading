@@ -29,7 +29,8 @@ import {
   Grain as GrainIcon,
   Warehouse as WarehouseIcon,
   People as PeopleIcon,
-  Menu as MenuIcon
+  Menu as MenuIcon,
+  KeyboardVoice as KeyboardVoiceIcon
 } from '@mui/icons-material';
 
 interface LayoutProps {
@@ -62,7 +63,8 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
     { text: t('navigation.inventory'), icon: <InventoryIcon />, path: '/inventory', permission: Permissions.MANAGE_INVENTORY },
     { text: t('navigation.grains'), icon: <GrainIcon />, path: '/grains', permission: Permissions.READ_ALL },
     { text: t('navigation.godowns'), icon: <WarehouseIcon />, path: '/godowns', permission: Permissions.READ_ALL },
-    { text: t('navigation.users'), icon: <PeopleIcon />, path: '/users', permission: Permissions.MANAGE_USERS }
+    { text: t('navigation.users'), icon: <PeopleIcon />, path: '/users', permission: Permissions.MANAGE_USERS },
+    { text: t('navigation.voice_bill'), icon: <KeyboardVoiceIcon />, path: '/voice-bill', permission: Permissions.CREATE_PURCHASE }
   ];
 
   const drawer = (
