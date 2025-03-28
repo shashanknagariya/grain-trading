@@ -98,6 +98,41 @@
       "delete_error": "Failed to delete purchase"
     }
   },
+  "sales": {
+    "title": "Sales",
+    "add_sale": "Add Sale",
+    "edit_sale": "Edit Sale",
+    "delete_sale": "Delete Sale",
+    "bill_number": "Bill Number",
+    "customer_name": "Customer Name",
+    "grain_name": "Grain",
+    "number_of_bags": "Number of Bags",
+    "total_weight": "Total Weight",
+    "total_amount": "Total Amount",
+    "payment_status": "Payment Status",
+    "sale_date": "Sale Date",
+    "print_bill": "Print Bill",
+    "filters": {
+      "bill_number": "Bill Number",
+      "customer_name": "Customer Name",
+      "grain_name": "Grain Name",
+      "date_range": "Date Range",
+      "amount_range": "Amount Range",
+      "payment_status": "Payment Status"
+    },
+    "paid": "Paid",
+    "pending": "Pending",
+    "partial": "Partial",
+    "create_success": "Sale created successfully",
+    "update_success": "Sale updated successfully",
+    "delete_success": "Sale deleted successfully",
+    "errors": {
+      "fetch_error": "Failed to fetch sales",
+      "create_error": "Failed to create sale",
+      "update_error": "Failed to update sale",
+      "delete_error": "Failed to delete sale"
+    }
+  },
   "inventory": {
     "title": "Current Inventory",
     "grain_name": "Grain",
@@ -149,35 +184,6 @@
     "addSuccess": "User added successfully",
     "editSuccess": "User updated successfully",
     "deleteSuccess": "User deleted successfully"
-  },
-  "sales": {
-    "title": "Sales",
-    "create_sale": "Create Sale",
-    "edit_sale": "Edit Sale",
-    "bill_number": "Bill Number",
-    "customer_name": "Customer Name",
-    "sale_date": "Sale Date",
-    "number_of_bags": "Number of Bags",
-    "total_weight": "Total Weight (kg)",
-    "rate_per_kg": "Rate per kg",
-    "total_amount": "Total Amount",
-    "payment_status": "Payment Status",
-    "transportation_mode": "Transportation Mode",
-    "vehicle_number": "Vehicle Number",
-    "driver_name": "Driver Name",
-    "update_success": "Sale updated successfully",
-    "delete_success": "Sale deleted successfully",
-    "delete_confirmation_title": "Delete Sale",
-    "delete_confirmation_message": "Are you sure you want to delete sale with bill number {{billNumber}}? This action cannot be undone.",
-    "view_details": "View Details",
-    "filters": {
-      "date_range": "Sale Date Range",
-      "bill_number": "Search by Bill Number",
-      "customer_name": "Search by Customer Name",
-      "grain_name": "Filter by Grain",
-      "amount_range": "Total Amount Range",
-      "payment_status": "Filter by Payment Status"
-    }
   },
   "errors": {
     "fetch_error": "Failed to fetch data",

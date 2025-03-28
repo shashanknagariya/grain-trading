@@ -6,23 +6,23 @@
 - [x] Verify inventory updates after sale creation/deletion
 
 ## 2. Add Number of Bags Column to Sales Page
-- [ ] Update Sales page component to include number of bags column
-- [ ] Add translation keys for the new column
-- [ ] Ensure proper alignment and formatting
+- [x] Update Sales page component to include number of bags column
+- [x] Add translation keys for the new column
+- [x] Ensure proper alignment and formatting
 
 ## 3. Enhance Sale Detail Popup
-- [ ] Add more transaction details to the popup
-- [ ] Fix close button translation
-- [ ] Improve layout and formatting
+- [x] Add more transaction details to the popup
+- [x] Fix close button translation
+- [x] Improve layout and formatting
 
 ## 4. Fix Purchase Print Page
-- [ ] Update description of goods to show grain name
-- [ ] Verify other print details are correct
+- [x] Update description of goods to show grain name
+- [x] Verify other print details are correct
 
 ## 5. Hindi Translation Issues
-- [ ] Add missing Hindi translations for purchase page columns
-- [ ] Test language switching
-- [ ] Verify all translations
+- [x] Add missing Hindi translations for purchase page columns
+- [x] Test language switching
+- [x] Verify all translations
 
 ## Progress Tracking
 ### Completed
@@ -30,11 +30,25 @@
    - Added explicit inventory deduction in create_sale
    - Added explicit inventory addition in delete_sale
    - Improved transaction handling and error reporting
+2. Added number of bags column to sales page:
+   - Added column to table
+   - Updated translations
+   - Improved layout
+3. Enhanced sale detail popup:
+   - Added more transaction details
+   - Fixed close button translation
+   - Improved layout with sections
+   - Added transport and tax information
+4. Fixed purchase print page:
+   - Updated grain name display
+   - Fixed description of goods showing NA
+5. Added Hindi translations:
+   - Added missing purchase page translations
+   - Added payment status translations
+   - Improved consistency in translations
 
 ### In Progress
-- Adding number of bags column to sales page
+- None
 
 ### Up Next
-1. Enhance sale detail popup
-2. Fix purchase print description
-3. Add Hindi translations
+- None - All tasks completed!

@@ -379,9 +379,11 @@ export const Sales: React.FC = () => {
             <TableRow>
               <TableCell>{t('sales.bill_number')}</TableCell>
               <TableCell>{t('sales.customer_name')}</TableCell>
-              <TableCell>{t('sales.sale_date')}</TableCell>
-              <TableCell>{t('sales.total_amount')}</TableCell>
+              <TableCell>{t('sales.grain_name')}</TableCell>
+              <TableCell align="right">{t('sales.number_of_bags')}</TableCell>
+              <TableCell align="right">{t('sales.total_amount')}</TableCell>
               <TableCell>{t('sales.payment_status')}</TableCell>
+              <TableCell>{t('sales.sale_date')}</TableCell>
               <TableCell>{t('common.actions')}</TableCell>
             </TableRow>
           </TableHead>
@@ -390,8 +392,9 @@ export const Sales: React.FC = () => {
               <TableRow key={sale.id}>
                 <TableCell>{sale.bill_number}</TableCell>
                 <TableCell>{sale.customer_name || sale.buyer_name}</TableCell>
-                <TableCell>{formatDate(new Date(sale.sale_date))}</TableCell>
-                <TableCell>{formatCurrency(sale.total_amount)}</TableCell>
+                <TableCell>{sale.grain_name}</TableCell>
+                <TableCell align="right">{sale.number_of_bags}</TableCell>
+                <TableCell align="right">{formatCurrency(sale.total_amount)}</TableCell>
                 <TableCell>
                   <Chip
                     label={getStatusLabel(sale.payment_status)}
@@ -399,6 +402,7 @@ export const Sales: React.FC = () => {
                     size="small"
                   />
                 </TableCell>
+                <TableCell>{formatDate(new Date(sale.sale_date))}</TableCell>
                 <TableCell>
                   <IconButton onClick={(e) => handleOpenMenu(e, sale)}>
                     <MoreVertIcon />

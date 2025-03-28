@@ -16,7 +16,12 @@
     "error": "त्रुटि",
     "success": "सफलता",
     "confirm": "पुष्टि करें",
-    "actions": "कार्रवाई"
+    "actions": "कार्रवाई",
+    "payment_status": {
+      "paid": "भुगतान किया गया",
+      "pending": "लंबित",
+      "partial": "आंशिक"
+    }
   },
   "navigation": {
     "dashboard": "डैशबोर्ड",
@@ -101,28 +106,28 @@
     "add_purchase": "नई खरीद जोड़ें",
     "edit_purchase": "खरीद संपादित करें",
     "delete_purchase": "खरीद हटाएं",
-    "purchase_date": "खरीद तिथि",
-    "seller_name": "विक्रेता का नाम",
-    "seller_gst": "विक्रेता जीएसटी",
-    "grain_name": "अनाज का नाम",
-    "number_of_bags": "बैग की संख्या",
-    "total_weight": "कुल वजन (किलोग्राम)",
-    "rate_per_kg": "प्रति किलो दर",
+    "bill_number": "बिल नंबर",
+    "supplier_name": "विक्रेता का नाम",
+    "grain_name": "अनाज",
+    "number_of_bags": "बोरों की संख्या",
+    "total_weight": "कुल वजन",
     "total_amount": "कुल राशि",
-    "payment_status": "भुगतान की स्थिति",
-    "paid": "भुगतान किया गया",
-    "pending": "लंबित",
-    "partial": "आंशिक",
-    "view_details": "विवरण देखें",
+    "payment_status": "भुगतान स्थिति",
+    "purchase_date": "खरीद की तारीख",
+    "min_amount": "न्यूनतम राशि",
+    "max_amount": "अधिकतम राशि",
+    "start_date": "आरंभ तिथि",
+    "end_date": "अंतिम तिथि",
     "print_bill": "बिल प्रिंट करें",
-    "purchase_details": "खरीद विवरण",
-    "transportation_mode": "परिवहन का माध्यम",
-    "vehicle_number": "वाहन संख्या",
-    "driver_name": "चालक का नाम",
-    "lr_number": "एलआर नंबर",
-    "po_number": "पीओ नंबर",
-    "purchase_created": "खरीद सफलतापूर्वक जोड़ी गई",
-    "status_updated": "भुगतान की स्थिति अपडेट की गई"
+    "create_success": "खरीद सफलतापूर्वक जोड़ी गई",
+    "update_success": "खरीद सफलतापूर्वक अपडेट की गई",
+    "delete_success": "खरीद सफलतापूर्वक हटाई गई",
+    "errors": {
+      "fetch_error": "खरीद लाने में विफल",
+      "create_error": "खरीद बनाने में विफल",
+      "update_error": "खरीद अपडेट करने में विफल",
+      "delete_error": "खरीद हटाने में विफल"
+    }
   },
   "sales": {
     "title": "बिक्री",

@@ -1,179 +1,102 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Grid,
   Typography,
+  Grid,
+  Divider,
   Box,
-  Paper,
-  Chip,
-  Menu,
-  MenuItem,
-  IconButton
+  Chip
 } from '@mui/material';
-import { Print as PrintIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
-import { formatDate, formatCurrency } from '../utils/formatters';
 import { Sale } from '../types/sale';
+import { formatDate, formatCurrency } from '../utils/formatters';
 import { useTranslation } from 'react-i18next';
 
 interface SaleDetailsProps {
+  sale: Sale | null;
   open: boolean;
   onClose: () => void;
-  sale: Sale | null;
-  onPrint: () => void;
-  handlePaymentStatusChange: (saleId: number, newStatus: 'pending' | 'paid' | 'partial') => void;
 }
 
-export const SaleDetails: React.FC<SaleDetailsProps> = ({ open, onClose, sale, onPrint, handlePaymentStatusChange }) => {
+export const SaleDetails: React.FC<SaleDetailsProps> = ({ sale, open, onClose }) => {
   const { t } = useTranslation();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleStatusMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleStatusMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleStatusChange = async (newStatus: 'pending' | 'paid' | 'partial') => {
-    if (sale) {
-      await handlePaymentStatusChange(sale.id, newStatus);
-      handleStatusMenuClose();
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'paid':
-        return 'success';
-      case 'pending':
-        return 'error';
-      case 'partial':
-        return 'warning';
-      default:
-        return 'default';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'paid':
-        return t('sales.paid');
-      case 'pending':
-        return t('sales.pending');
-      case 'partial':
-        return t('sales.partial');
-      default:
-        return status;
-    }
-  };
 
   if (!sale) return null;
+
+  const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+    <Grid container spacing={2} sx={{ py: 1 }}>
+      <Grid item xs={4}>
+        <Typography variant="subtitle2" color="textSecondary">
+          {label}
+        </Typography>
+      </Grid>
+      <Grid item xs={8}>
+        <Typography>{value}</Typography>
+      </Grid>
+    </Grid>
+  );
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">{t('sales.sale_details')}</Typography>
-          <Box>
-            <IconButton onClick={onPrint} size="small">
-              <PrintIcon />
-            </IconButton>
-            <IconButton onClick={handleStatusMenuClick} size="small">
-              <MoreVertIcon />
-            </IconButton>
-          </Box>
-        </Box>
+        <Typography variant="h6">{t('sales.title')} - {sale.bill_number}</Typography>
       </DialogTitle>
       <DialogContent>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                {t('sales.bill_number')}
-              </Typography>
-              <Typography variant="body1">{sale.bill_number}</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                {t('sales.customer_name')}
-              </Typography>
-              <Typography variant="body1">{sale.customer_name || sale.buyer_name}</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                {t('sales.sale_date')}
-              </Typography>
-              <Typography variant="body1">{formatDate(new Date(sale.sale_date))}</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                {t('sales.total_amount')}
-              </Typography>
-              <Typography variant="body1">{formatCurrency(sale.total_amount)}</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50' }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                {t('sales.payment_status')}
-              </Typography>
+        <Box sx={{ py: 2 }}>
+          <Typography variant="h6" gutterBottom>{t('common.basic_info')}</Typography>
+          <DetailRow label={t('sales.bill_number')} value={sale.bill_number} />
+          <DetailRow label={t('sales.customer_name')} value={sale.buyer_name} />
+          <DetailRow label={t('sales.grain_name')} value={sale.grain_name} />
+          <DetailRow label={t('sales.sale_date')} value={formatDate(new Date(sale.sale_date))} />
+          
+          <Divider sx={{ my: 2 }} />
+          
+          <Typography variant="h6" gutterBottom>{t('common.quantity_details')}</Typography>
+          <DetailRow label={t('sales.number_of_bags')} value={sale.number_of_bags} />
+          <DetailRow label={t('sales.total_weight')} value={`${sale.total_weight} kg`} />
+          <DetailRow label={t('sales.rate_per_kg')} value={formatCurrency(sale.rate_per_kg)} />
+          <DetailRow label={t('sales.total_amount')} value={formatCurrency(sale.total_amount)} />
+          
+          <Divider sx={{ my: 2 }} />
+          
+          <Typography variant="h6" gutterBottom>{t('common.payment_info')}</Typography>
+          <DetailRow 
+            label={t('sales.payment_status')} 
+            value={
               <Chip
-                label={getStatusLabel(sale.payment_status)}
-                color={getStatusColor(sale.payment_status)}
+                label={t(`common.payment_status.${sale.payment_status}`)}
+                color={sale.payment_status === 'paid' ? 'success' : sale.payment_status === 'partial' ? 'warning' : 'error'}
                 size="small"
               />
-            </Paper>
-          </Grid>
-        </Grid>
+            }
+          />
+          
+          <Divider sx={{ my: 2 }} />
+          
+          <Typography variant="h6" gutterBottom>{t('common.transport_info')}</Typography>
+          <DetailRow label={t('sales.transportation_mode')} value={sale.transportation_mode} />
+          <DetailRow label={t('sales.vehicle_number')} value={sale.vehicle_number} />
+          <DetailRow label={t('sales.driver_name')} value={sale.driver_name} />
+          <DetailRow label={t('sales.lr_number')} value={sale.lr_number || '-'} />
+          <DetailRow label={t('sales.po_number')} value={sale.po_number || '-'} />
+          
+          {sale.buyer_gst && (
+            <>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" gutterBottom>{t('common.tax_info')}</Typography>
+              <DetailRow label={t('sales.buyer_gst')} value={sale.buyer_gst} />
+            </>
+          )}
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
           {t('common.close')}
         </Button>
       </DialogActions>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleStatusMenuClose}
-      >
-        <MenuItem onClick={() => handleStatusChange('pending')}>
-          <Chip 
-            label={t('sales.pending')}
-            color="error" 
-            size="small" 
-            sx={{ minWidth: 80 }}
-          />
-        </MenuItem>
-        <MenuItem onClick={() => handleStatusChange('partial')}>
-          <Chip 
-            label={t('sales.partial')}
-            color="warning" 
-            size="small" 
-            sx={{ minWidth: 80 }}
-          />
-        </MenuItem>
-        <MenuItem onClick={() => handleStatusChange('paid')}>
-          <Chip 
-            label={t('sales.paid')}
-            color="success" 
-            size="small"
-            sx={{ minWidth: 80 }}
-          />
-        </MenuItem>
-      </Menu>
     </Dialog>
   );
 };
