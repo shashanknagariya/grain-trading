@@ -13,6 +13,7 @@ import { Godowns } from './pages/Godowns';
 import { PurchaseDetailPage } from './pages/PurchaseDetail';
 import { CreateSale } from './pages/CreateSale';
 import { VoiceBillCreation } from './pages/VoiceBillCreation';
+import { VoiceBillProvider } from './contexts/VoiceBillContext';
 import './App.css';
 import './styles/print.css';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -76,58 +77,60 @@ const App = () => {
         <AuthProvider>
           <NotificationProvider>
             <SnackbarProvider maxSnack={3}>
-              <PWAInstallPrompt />
-              <Router>
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route
-                    path="/*"
-                    element={
-                      <ProtectedRoute
-                        element={
-                          <Layout>
-                            <Routes>
-                              <Route path="/" element={<Navigate to="/dashboard" />} />
-                              <Route path="/dashboard" element={
-                                <Suspense fallback={<LoadingFallback />}>
-                                  <Dashboard />
-                                </Suspense>
-                              } />
-                              <Route path="/purchases" element={
-                                <Suspense fallback={<LoadingFallback />}>
-                                  <LazyPurchases />
-                                </Suspense>
-                              } />
-                              <Route path="/purchases/:id" element={<PurchaseDetailPage />} />
-                              <Route path="/sales" element={
-                                <Suspense fallback={<LoadingFallback />}>
-                                  <LazySales />
-                                </Suspense>
-                              } />
-                              <Route path="/sales/new" element={<CreateSale />} />
-                              <Route path="/inventory" element={
-                                <Suspense fallback={<LoadingFallback />}>
-                                  <Inventory />
-                                </Suspense>
-                              } />
-                              <Route path="/grains" element={<Grains />} />
-                              <Route path="/godowns" element={<Godowns />} />
-                              <Route path="/users" element={
-                                <Suspense fallback={<LoadingFallback />}>
-                                  <LazyUsers />
-                                </Suspense>
-                              } />
-                              <Route path="/voice-bill" element={<VoiceBillCreation />} />
-                            </Routes>
-                          </Layout>
-                        }
-                      />
-                    }
-                  />
-                </Routes>
-              </Router>
+              <VoiceBillProvider>
+                <PWAInstallPrompt />
+                <Router>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route
+                      path="/*"
+                      element={
+                        <ProtectedRoute
+                          element={
+                            <Layout>
+                              <Routes>
+                                <Route path="/" element={<Navigate to="/dashboard" />} />
+                                <Route path="/dashboard" element={
+                                  <Suspense fallback={<LoadingFallback />}>
+                                    <Dashboard />
+                                  </Suspense>
+                                } />
+                                <Route path="/purchases" element={
+                                  <Suspense fallback={<LoadingFallback />}>
+                                    <LazyPurchases />
+                                  </Suspense>
+                                } />
+                                <Route path="/purchases/:id" element={<PurchaseDetailPage />} />
+                                <Route path="/sales" element={
+                                  <Suspense fallback={<LoadingFallback />}>
+                                    <LazySales />
+                                  </Suspense>
+                                } />
+                                <Route path="/sales/new" element={<CreateSale />} />
+                                <Route path="/inventory" element={
+                                  <Suspense fallback={<LoadingFallback />}>
+                                    <Inventory />
+                                  </Suspense>
+                                } />
+                                <Route path="/grains" element={<Grains />} />
+                                <Route path="/godowns" element={<Godowns />} />
+                                <Route path="/users" element={
+                                  <Suspense fallback={<LoadingFallback />}>
+                                    <LazyUsers />
+                                  </Suspense>
+                                } />
+                                <Route path="/voice-bill" element={<VoiceBillCreation />} />
+                              </Routes>
+                            </Layout>
+                          }
+                        />
+                      }
+                    />
+                  </Routes>
+                </Router>
+              </VoiceBillProvider>
             </SnackbarProvider>
           </NotificationProvider>
         </AuthProvider>
